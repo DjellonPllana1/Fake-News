@@ -1,0 +1,38 @@
+[
+  {
+    "id": "AN-1001",
+    "title": "Breaking: Celebrity adopts 40 tigers for charity",
+    "source": "viralbeam.com",
+    "label": "Fake",
+    "confidence": 96,
+    "model": "TF-IDF + Logistic Regression v2.1",
+    "date": "2026-04-21 10:14"
+  },
+  {
+    "id": "AN-1002",
+    "title": "Local municipality launches digital services portal",
+    "source": "city.gov",
+    "label": "Real",
+    "confidence": 92,
+    "model": "TF-IDF + Logistic Regression v2.1",
+    "date": "2026-04-21 09:52"
+  },
+  {
+    "id": "AN-1003",
+    "title": "Opinion: The housing crisis is purely a mindset issue",
+    "source": "politicstoday.net",
+    "label": "Bias",
+    "confidence": 81,
+    "model": "TF-IDF + Logistic Regression v2.1",
+    "date": "2026-04-20 19:33"
+  },
+  {
+    "id": "AN-1004",
+    "title": "Study says sleeping with socks increases luck by 300%",
+    "source": "laughledger.com",
+    "label": "Satire",
+    "confidence": 88,
+    "model": "TF-IDF + Logistic Regression v2.1",
+    "date": "2026-04-20 16:04"
+  }
+]
