@@ -1,0 +1,30 @@
+{
+  "accuracy": 0.9941176470588236,
+  "confusion_matrix": {
+    "Bias": {
+      "Bias": 35,
+      "Fake": 0,
+      "Real": 0,
+      "Satire": 0
+    },
+    "Fake": {
+      "Bias": 0,
+      "Fake": 135,
+      "Real": 1,
+      "Satire": 0
+    },
+    "Real": {
+      "Bias": 0,
+      "Fake": 1,
+      "Real": 135,
+      "Satire": 0
+    },
+    "Satire": {
+      "Bias": 0,
+      "Fake": 0,
+      "Real": 0,
+      "Satire": 33
+    }
+  },
+  "test_size": 340
+}
