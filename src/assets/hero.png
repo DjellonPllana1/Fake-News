@@ -1,0 +1,1515 @@
+import React, { useEffect, useMemo, useState } from "react";
+import {
+  Bell,
+  Brain,
+  FileBarChart,
+  FileSearch,
+  LayoutDashboard,
+  LogOut,
+  Menu,
+  Search,
+  Settings,
+  Shield,
+  Users,
+  X,
+  CheckCircle2,
+  AlertTriangle,
+  Upload,
+  Filter,
+  Download,
+  RefreshCcw,
+  Activity,
+  Newspaper,
+  WandSparkles,
+  FlaskConical,
+} from "lucide-react";
+import {
+  ResponsiveContainer,
+  BarChart,
+  Bar,
+  PieChart,
+  Pie,
+  Cell,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  LineChart,
+  Line,
+  Tooltip,
+} from "recharts";
+
+const classColors = {
+  Real: "badge badge-real",
+  Fake: "badge badge-fake",
+  Satire: "badge badge-satire",
+  Bias: "badge badge-bias",
+  "Needs Review": "badge badge-review",
+};
+
+const chartPalette = ["#0f172a", "#475569", "#94a3b8", "#cbd5e1", "#f59e0b"];
+
+const apiIconMap = {
+  Activity,
+  AlertTriangle,
+  Newspaper,
+  Users,
+  WandSparkles,
+};
+
+const sidebarItems = [
+  { id: "dashboard", label: "Dashboard", icon: LayoutDashboard },
+  { id: "analyze", label: "Analyze News", icon: Brain },
+  { id: "mlLab", label: "ML Lab", icon: FlaskConical },
+  { id: "history", label: "Analysis History", icon: FileSearch },
+  { id: "reports", label: "Reports", icon: FileBarChart },
+  { id: "notifications", label: "Notifications", icon: Bell },
+  { id: "admin", label: "Admin Panel", icon: Shield },
+  { id: "settings", label: "Settings", icon: Settings },
+];
+
+const stats = [
+  { title: "Analyses Today", value: "124", sub: "+18% vs yesterday", icon: Activity },
+  { title: "Avg Confidence", value: "89.4%", sub: "Across all predictions", icon: WandSparkles },
+  { title: "Flagged Fake", value: "37", sub: "Needs manual review", icon: AlertTriangle },
+  { title: "Active Users", value: "58", sub: "12 online now", icon: Users },
+];
+
+const recentPredictions = [
+  { id: 1, title: "Government Announces New Education Reform", source: "newsdaily.com", label: "Real", confidence: 94, time: "2 min ago" },
+  { id: 2, title: "Scientists Confirm Coffee Doubles Human IQ Overnight", source: "flashbuzz.net", label: "Satire", confidence: 91, time: "12 min ago" },
+  { id: 3, title: "Secret Device Controls Global Weather Patterns", source: "truthbeam.live", label: "Fake", confidence: 97, time: "18 min ago" },
+  { id: 4, title: "Economic Policy Article Shows Strong Editorial Slant", source: "worldviewpost.org", label: "Bias", confidence: 84, time: "31 min ago" },
+];
+
+const distributionData = [
+  { name: "Real", value: 42 },
+  { name: "Fake", value: 28 },
+  { name: "Satire", value: 16 },
+  { name: "Bias", value: 14 },
+];
+
+const trendData = [
+  { day: "Mon", count: 18 },
+  { day: "Tue", count: 24 },
+  { day: "Wed", count: 21 },
+  { day: "Thu", count: 27 },
+  { day: "Fri", count: 31 },
+  { day: "Sat", count: 20 },
+  { day: "Sun", count: 16 },
+];
+
+const monthlyConfidence = [
+  { month: "Jan", value: 82 },
+  { month: "Feb", value: 84 },
+  { month: "Mar", value: 86 },
+  { month: "Apr", value: 88 },
+  { month: "May", value: 89 },
+  { month: "Jun", value: 91 },
+];
+
+const fallbackDashboard = {
+  stats,
+  recentPredictions,
+  distributionData,
+  trendData,
+  monthlyConfidence,
+};
+
+const historyRows = [
+  {
+    id: "AN-1001",
+    title: "Breaking: Celebrity adopts 40 tigers for charity",
+    source: "viralbeam.com",
+    label: "Fake",
+    confidence: 96,
+    model: "TF-IDF + Logistic Regression v2.1",
+    date: "2026-04-21 10:14",
+  },
+  {
+    id: "AN-1002",
+    title: "Local municipality launches digital services portal",
+    source: "city.gov",
+    label: "Real",
+    confidence: 92,
+    model: "TF-IDF + Logistic Regression v2.1",
+    date: "2026-04-21 09:52",
+  },
+  {
+    id: "AN-1003",
+    title: "Opinion: The housing crisis is purely a mindset issue",
+    source: "politicstoday.net",
+    label: "Bias",
+    confidence: 81,
+    model: "TF-IDF + Logistic Regression v2.1",
+    date: "2026-04-20 19:33",
+  },
+  {
+    id: "AN-1004",
+    title: "Study says sleeping with socks increases luck by 300%",
+    source: "laughledger.com",
+    label: "Satire",
+    confidence: 88,
+    model: "TF-IDF + Logistic Regression v2.1",
+    date: "2026-04-20 16:04",
+  },
+];
+
+const notificationsData = [
+  { id: 1, title: "Prediction completed", text: "A new article was classified as Fake with 97% confidence.", time: "Just now", unread: true },
+  { id: 2, title: "Model updated", text: "Model version v2.1 has been set as active in production.", time: "25 min ago", unread: true },
+  { id: 3, title: "Export ready", text: "Your weekly report is ready for download.", time: "2 hours ago", unread: false },
+  { id: 4, title: "Security alert", text: "3 failed login attempts were blocked for one account.", time: "Yesterday", unread: false },
+];
+
+const users = [
+  { name: "Arta Krasniqi", email: "arta@demo.com", role: "Admin", status: "Active" },
+  { name: "Liridon Gashi", email: "liridon@demo.com", role: "Analyst", status: "Active" },
+  { name: "Bora Shala", email: "bora@demo.com", role: "User", status: "Inactive" },
+  { name: "Dion Pllana", email: "dion@demo.com", role: "User", status: "Active" },
+];
+
+function getBadgeClass(label) {
+  return classColors[label] || "badge";
+}
+
+function filterHistoryRows(rows, query) {
+  const normalized = query.trim().toLowerCase();
+  if (!normalized) return rows;
+  return rows.filter(
+    (row) =>
+      row.title.toLowerCase().includes(normalized) ||
+      row.label.toLowerCase().includes(normalized) ||
+      row.source.toLowerCase().includes(normalized)
+  );
+}
+
+function formatPercent(value) {
+  return `${value}%`;
+}
+
+const initialPrediction = {
+  label: "",
+  confidence: 0,
+  processed: false,
+  explanation: "",
+  probabilities: {},
+  topEvidence: [],
+  modelName: "",
+};
+
+function runInlineTests() {
+  console.assert(getBadgeClass("Fake").includes("badge-fake"), "Fake badge should use fake styling");
+  console.assert(filterHistoryRows(historyRows, "fake").length === 1, "Filter should find the fake row");
+  console.assert(filterHistoryRows(historyRows, "city.gov").length === 1, "Filter should match source search");
+  console.assert(filterHistoryRows(historyRows, "").length === historyRows.length, "Empty search should return all rows");
+  console.assert(filterHistoryRows(historyRows, "SATIRE").length === 1, "Filter should be case insensitive");
+  console.assert(formatPercent(97) === "97%", "Percent formatter should append %");
+  console.assert(formatPercent(0) === "0%", "Percent formatter should handle zero");
+}
+
+function InlineTestRunner() {
+  useEffect(() => {
+    runInlineTests();
+  }, []);
+  return null;
+}
+
+function LabelBadge({ label }) {
+  return <span className={getBadgeClass(label)}>{label}</span>;
+}
+
+function CustomTooltip({ active, payload, label, suffix = "" }) {
+  if (!active || !payload || !payload.length) return null;
+
+  return (
+    <div className="tooltip-box">
+      {label ? <p className="tooltip-title">{label}</p> : null}
+      {payload.map((entry, index) => (
+        <div key={`${entry.name}-${index}`} className="tooltip-row">
+          <span>{entry.name}</span>
+          <span className="tooltip-value">
+            {entry.value}
+            {suffix}
+          </span>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function Sidebar({ activePage, setActivePage, mobileOpen, setMobileOpen, user, onLogout }) {
+  return (
+    <>
+      {mobileOpen && <div className="sidebar-overlay" onClick={() => setMobileOpen(false)} />}
+      <aside className={`sidebar ${mobileOpen ? "sidebar-open" : ""}`}>
+        <div className="sidebar-header">
+          <div>
+            <p className="sidebar-label">AI Platform</p>
+            <h1 className="sidebar-title">Fake News Detect</h1>
+          </div>
+          <button className="icon-btn mobile-only" onClick={() => setMobileOpen(false)}>
+            <X size={20} />
+          </button>
+        </div>
+
+        <div className="profile-card">
+          <div className="avatar">{user?.name?.split(" ").map((part) => part[0]).join("").slice(0, 2) || "DP"}</div>
+          <div>
+            <p className="profile-name">{user?.name || "Dion Pllana"}</p>
+            <p className="profile-role">{user?.role || "Student / Admin"}</p>
+          </div>
+        </div>
+
+        <nav className="sidebar-nav">
+          {sidebarItems.map((item) => {
+            const Icon = item.icon;
+            const active = activePage === item.id;
+            return (
+              <button
+                key={item.id}
+                className={`nav-item ${active ? "nav-item-active" : ""}`}
+                onClick={() => {
+                  setActivePage(item.id);
+                  setMobileOpen(false);
+                }}
+              >
+                <Icon size={18} />
+                <span>{item.label}</span>
+              </button>
+            );
+          })}
+        </nav>
+
+        <div className="sidebar-footer">
+          <button className="btn btn-danger btn-full" onClick={onLogout}>
+            <LogOut size={16} />
+            Logout
+          </button>
+        </div>
+      </aside>
+    </>
+  );
+}
+
+function Topbar({ setMobileOpen, user }) {
+  return (
+    <div className="topbar">
+      <div>
+        <div className="topbar-left">
+          <button className="icon-btn mobile-only" onClick={() => setMobileOpen(true)}>
+            <Menu size={20} />
+          </button>
+          <div>
+            <h2 className="page-title">Fake News Detection Platform</h2>
+            <p className="page-subtitle">Monitor, analyze, and manage news classifications in one place.</p>
+          </div>
+        </div>
+      </div>
+
+      <div className="topbar-right desktop-only">
+        <div className="search-box">
+          <Search size={16} />
+          <input type="text" placeholder="Search articles, users, reports..." />
+        </div>
+        <button className="icon-btn">
+          <Bell size={16} />
+        </button>
+        <div className="avatar small">{user?.name?.split(" ").map((part) => part[0]).join("").slice(0, 2) || "DP"}</div>
+      </div>
+    </div>
+  );
+}
+
+function StatsCards({ items = stats }) {
+  return (
+    <section className="stats-grid">
+      {items.map((stat) => {
+        const Icon = typeof stat.icon === "string" ? apiIconMap[stat.icon] || Activity : stat.icon;
+        return (
+          <div className="card" key={stat.title}>
+            <div className="stat-card">
+              <div>
+                <p className="muted">{stat.title}</p>
+                <h3 className="stat-value">{stat.value}</h3>
+                <p className="small-muted">{stat.sub}</p>
+              </div>
+              <div className="stat-icon">
+                <Icon size={20} />
+              </div>
+            </div>
+          </div>
+        );
+      })}
+    </section>
+  );
+}
+
+function DashboardPage() {
+  const [dashboard, setDashboard] = useState(fallbackDashboard);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+
+  useEffect(() => {
+    const loadDashboard = async () => {
+      try {
+        const response = await fetch("/api/dashboard");
+        if (!response.ok) {
+          throw new Error(`Dashboard request failed (${response.status})`);
+        }
+        const data = await response.json();
+        setDashboard({
+          stats: data.stats || fallbackDashboard.stats,
+          recentPredictions: data.recentPredictions || [],
+          distributionData: data.distributionData || [],
+          trendData: data.trendData || [],
+          monthlyConfidence: data.monthlyConfidence || [],
+        });
+      } catch (err) {
+        console.error(err);
+        setError("Backend data could not be loaded, so fallback demo data is shown.");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadDashboard();
+  }, []);
+
+  return (
+    <div className="page-section">
+      {error ? <div className="empty-box" style={{ color: "#b91c1c" }}>{error}</div> : null}
+      {loading ? <div className="empty-box">Loading database dashboard...</div> : null}
+      <StatsCards items={dashboard.stats} />
+
+      <section className="grid-two">
+        <div className="card">
+          <div className="card-header">
+            <h3>Weekly Analysis Volume</h3>
+            <p>Number of analyzed articles over the last 7 days.</p>
+          </div>
+          <div className="card-body chart-box">
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={dashboard.trendData}>
+                <CartesianGrid vertical={false} strokeDasharray="3 3" />
+                <XAxis dataKey="day" />
+                <YAxis />
+                <Tooltip content={<CustomTooltip />} />
+                <Bar dataKey="count" name="Articles" fill="#0f172a" radius={[12, 12, 0, 0]} />
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+        </div>
+
+        <div className="card">
+          <div className="card-header">
+            <h3>Class Distribution</h3>
+            <p>Prediction classes from recent analysis sessions.</p>
+          </div>
+          <div className="card-body chart-box">
+            <ResponsiveContainer width="100%" height="100%">
+              <PieChart>
+                <Pie data={dashboard.distributionData} dataKey="value" nameKey="name" innerRadius={70} outerRadius={110} paddingAngle={3}>
+                  {dashboard.distributionData.map((entry, index) => (
+                    <Cell key={entry.name} fill={chartPalette[index % chartPalette.length]} />
+                  ))}
+                </Pie>
+                <Tooltip content={<CustomTooltip suffix="%" />} />
+              </PieChart>
+            </ResponsiveContainer>
+          </div>
+          <div className="mini-grid">
+            {dashboard.distributionData.map((item) => (
+              <div key={item.name} className="mini-card">
+                <span>{item.name}</span>
+                <strong>{formatPercent(item.value)}</strong>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <section className="grid-two">
+        <div className="card">
+          <div className="card-header">
+            <h3>Model Confidence Trend</h3>
+            <p>Average confidence progression by month.</p>
+          </div>
+          <div className="card-body chart-box">
+            <ResponsiveContainer width="100%" height="100%">
+              <LineChart data={dashboard.monthlyConfidence}>
+                <CartesianGrid vertical={false} strokeDasharray="3 3" />
+                <XAxis dataKey="month" />
+                <YAxis domain={[70, 100]} />
+                <Tooltip content={<CustomTooltip suffix="%" />} />
+                <Line type="monotone" dataKey="value" name="Confidence" stroke="#0f172a" strokeWidth={3} dot={{ r: 4 }} />
+              </LineChart>
+            </ResponsiveContainer>
+          </div>
+        </div>
+
+        <div className="card">
+          <div className="card-header">
+            <h3>Recent Predictions</h3>
+            <p>Live stream of the latest classified articles.</p>
+          </div>
+          <div className="card-body stack-gap">
+            {dashboard.recentPredictions.map((item) => (
+              <div key={item.id} className="list-card">
+                <div>
+                  <p className="item-title">{item.title}</p>
+                  <div className="item-meta">
+                    <span>{item.source}</span>
+                    <span>•</span>
+                    <span>{item.time}</span>
+                  </div>
+                </div>
+                <div className="text-right">
+                  <LabelBadge label={item.label} />
+                  <p className="small-strong">{formatPercent(item.confidence)}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+    </div>
+  );
+}
+
+function AnalyzePage() {
+  const [headline, setHeadline] = useState("");
+  const [sourceUrl, setSourceUrl] = useState("");
+  const [articleText, setArticleText] = useState("");
+  const [modelVersion, setModelVersion] = useState("Python Multinomial Naive Bayes v1.0");
+  const [language, setLanguage] = useState("English");
+  const [saveResult, setSaveResult] = useState(true);
+  const [prediction, setPrediction] = useState(initialPrediction);
+  const [loading, setLoading] = useState(false);
+  const [fetchingUrl, setFetchingUrl] = useState(false);
+  const [error, setError] = useState("");
+
+  useEffect(() => {
+    const loadExample = async () => {
+      try {
+        const response = await fetch("/api/articles?label=Real&limit=1");
+        if (!response.ok) return;
+        const data = await response.json();
+        const article = data.articles?.[0];
+        if (!article) return;
+        setHeadline(article.title);
+        setSourceUrl("");
+        setArticleText(article.preview);
+      } catch (err) {
+        console.error(err);
+      }
+    };
+
+    loadExample();
+  }, []);
+
+  const fetchFromUrl = async () => {
+    if (!sourceUrl.trim().startsWith("http")) {
+      setError("Vendos nje link valid qe fillon me http ose https.");
+      return;
+    }
+
+    setFetchingUrl(true);
+    setError("");
+
+    try {
+      const response = await fetch("/api/fetch-url", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ url: sourceUrl }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.message || `URL fetch failed with status ${response.status}`);
+      }
+
+      const data = await response.json();
+      setHeadline(data.title || headline);
+      setArticleText(data.text || "");
+      setError(data.warning || "");
+    } catch (err) {
+      console.error(err);
+      setError(err.message || "Nuk munda ta lexoj lajmin nga ky link. Provo nje link tjeter ose ngjite tekstin manualisht.");
+    } finally {
+      setFetchingUrl(false);
+    }
+  };
+
+  const runAnalysis = async () => {
+    setLoading(true);
+    setError("");
+
+    try {
+      const response = await fetch("/api/analyze", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          headline,
+          source: sourceUrl,
+          url: sourceUrl,
+          text: articleText,
+          model: modelVersion,
+          language,
+          save: saveResult,
+        }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.message || `Request failed with status ${response.status}`);
+      }
+
+      const data = await response.json();
+      setPrediction({
+        label: data.label,
+        confidence: data.confidence,
+        processed: true,
+        explanation: data.explanation || "The classifier returned a result.",
+        probabilities: data.probabilities || {},
+        topEvidence: data.topEvidence || [],
+        modelName: data.modelName || modelVersion,
+      });
+      if (data.headline) setHeadline(data.headline);
+      if (data.text) setArticleText(data.text);
+    } catch (err) {
+      console.error(err);
+      setError(err.message || "Nuk munda ta analizoj lajmin. Kontrollo backend-in ose provo tekst manual.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const clearForm = () => {
+    setPrediction(initialPrediction);
+    setHeadline("");
+    setSourceUrl("");
+    setArticleText("");
+  };
+
+  const getScore = (label) => Math.round(prediction.probabilities?.[label] || (prediction.label === label ? prediction.confidence : 0));
+
+  return (
+    <div className="grid-two analyze-grid">
+      <div className="card">
+        <div className="card-header">
+          <h3>Analyze News Article</h3>
+          <p>Paste a headline or full article text and run the classifier.</p>
+        </div>
+        <div className="card-body stack-gap">
+          <div className="form-grid">
+            <div>
+              <label className="field-label">Headline</label>
+              <input
+                className="input"
+                value={headline}
+                onChange={(event) => setHeadline(event.target.value)}
+                placeholder="Enter news headline"
+              />
+            </div>
+            <div>
+              <label className="field-label">Source URL</label>
+              <input
+                className="input"
+                value={sourceUrl}
+                onChange={(event) => setSourceUrl(event.target.value)}
+                placeholder="https://source.com/article"
+              />
+            </div>
+          </div>
+
+          <div>
+            <label className="field-label">Article Text</label>
+            <textarea
+              className="textarea"
+              value={articleText}
+              onChange={(event) => setArticleText(event.target.value)}
+            />
+          </div>
+
+          <div className="form-grid-three">
+            <div>
+              <label className="field-label">Model</label>
+              <select className="input" value={modelVersion} onChange={(event) => setModelVersion(event.target.value)}>
+                <option>Python Multinomial Naive Bayes v1.0</option>
+                <option>Dataset Similarity + Keyword Rules v1.0</option>
+                <option>Logistic Regression v2.1</option>
+                <option>SVM v1.8</option>
+                <option>Naive Bayes v1.4</option>
+              </select>
+            </div>
+            <div>
+              <label className="field-label">Language</label>
+              <select className="input" value={language} onChange={(event) => setLanguage(event.target.value)}>
+                <option>English</option>
+                <option>Albanian</option>
+                <option>Serbian</option>
+              </select>
+            </div>
+            <div>
+              <label className="field-label">Save Result</label>
+              <div className="switch-row">
+                <input type="checkbox" checked={saveResult} onChange={(event) => setSaveResult(event.target.checked)} />
+                <span>Store in history</span>
+              </div>
+            </div>
+          </div>
+
+          {error ? <div className="empty-box" style={{ color: "#b91c1c" }}>{error}</div> : null}
+
+          <div className="button-row">
+            <button className="btn btn-light" disabled={fetchingUrl} onClick={fetchFromUrl} type="button">
+              <Download size={16} />
+              {fetchingUrl ? "Reading URL..." : "Fetch URL"}
+            </button>
+            <button className="btn btn-dark" disabled={loading} onClick={runAnalysis}>
+              <Brain size={16} />
+              {loading ? "Analyzing..." : "Run Naive Bayes"}
+            </button>
+            <button className="btn btn-light" onClick={clearForm} type="button">
+              <RefreshCcw size={16} />
+              Clear
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div className="stack-gap">
+        <div className="card">
+          <div className="card-header">
+            <h3>Prediction Result</h3>
+            <p>Latest output from the text classification model.</p>
+          </div>
+          <div className="card-body">
+            {prediction.processed ? (
+              <div className="stack-gap">
+                <div className="result-box">
+                  <div>
+                    <p className="muted">Predicted Class</p>
+                    <div className="mt-8">
+                      <LabelBadge label={prediction.label} />
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    <p className="muted">Confidence</p>
+                    <p className="big-number">{formatPercent(prediction.confidence)}</p>
+                  </div>
+                </div>
+
+                <div className="stack-gap">
+                  <div>
+                    <div className="progress-label"><span>Fake</span><span>{getScore("Fake")}%</span></div>
+                    <div className="progress"><div className="progress-fill" style={{ width: `${Math.max(getScore("Fake"), 4)}%` }} /></div>
+                  </div>
+                  <div>
+                    <div className="progress-label"><span>Bias</span><span>{getScore("Bias")}%</span></div>
+                    <div className="progress"><div className="progress-fill" style={{ width: `${Math.max(getScore("Bias"), 4)}%` }} /></div>
+                  </div>
+                  <div>
+                    <div className="progress-label"><span>Satire</span><span>{getScore("Satire")}%</span></div>
+                    <div className="progress"><div className="progress-fill" style={{ width: `${Math.max(getScore("Satire"), 4)}%` }} /></div>
+                  </div>
+                  <div>
+                    <div className="progress-label"><span>Real</span><span>{getScore("Real")}%</span></div>
+                    <div className="progress"><div className="progress-fill" style={{ width: `${Math.max(getScore("Real"), 4)}%` }} /></div>
+                  </div>
+                  <div>
+                    <div className="progress-label"><span>Needs Review</span><span>{getScore("Needs Review")}%</span></div>
+                    <div className="progress"><div className="progress-fill progress-fill-review" style={{ width: `${Math.max(getScore("Needs Review"), 4)}%` }} /></div>
+                  </div>
+                </div>
+
+                <div className="separator" />
+
+                {prediction.confidence < 70 ? (
+                  <div className="warning-box">
+                    Low confidence: review this result manually before making a final decision.
+                  </div>
+                ) : null}
+
+                {prediction.topEvidence?.length ? (
+                  <div className="evidence-list">
+                    <p className="muted">Words that influenced prediction</p>
+                    <div className="token-row">
+                      {prediction.topEvidence.map((item) => (
+                        <span key={item.token} className="token-pill">{item.token}</span>
+                      ))}
+                    </div>
+                  </div>
+                ) : null}
+
+                <div className="grid-two small-grid">
+                  <div className="mini-card left">
+                    <p className="muted">Model Used</p>
+                    <p className="small-strong">{prediction.modelName || modelVersion}</p>
+                  </div>
+                  <div className="mini-card left">
+                    <p className="muted">Processing Time</p>
+                    <p className="small-strong">{loading ? "Running..." : "0.84 sec"}</p>
+                  </div>
+                </div>
+              </div>
+            ) : (
+              <div className="empty-box">Run analysis to see the result here.</div>
+            )}
+          </div>
+        </div>
+
+        <div className="card">
+          <div className="card-header">
+            <h3>Why this result?</h3>
+            <p>Human-friendly explanation for the classification.</p>
+          </div>
+          <div className="card-body explanation">
+            <p>{prediction.processed ? prediction.explanation : "The backend will provide a classification explanation after analysis."}</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function HistoryPage() {
+  const [query, setQuery] = useState("");
+  const [rows, setRows] = useState(historyRows);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+
+  useEffect(() => {
+    const loadHistory = async () => {
+      try {
+        const response = await fetch("/api/history");
+        if (!response.ok) {
+          throw new Error(`Failed to load history (${response.status})`);
+        }
+        const data = await response.json();
+        setRows(data.history || historyRows);
+      } catch (err) {
+        console.error(err);
+        setError("Unable to fetch history. Confirm the backend is running on port 4000.");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadHistory();
+  }, []);
+
+  const filtered = useMemo(() => filterHistoryRows(rows, query), [query, rows]);
+
+  return (
+    <div className="page-section">
+      <div className="card">
+        <div className="card-header">
+          <h3>Analysis History</h3>
+          <p>Search, filter, and review previously analyzed news items.</p>
+        </div>
+        <div className="card-body stack-gap">
+          <div className="toolbar">
+            <div className="toolbar-left">
+              <div className="search-box wide">
+                <Search size={16} />
+                <input
+                  value={query}
+                  onChange={(e) => setQuery(e.target.value)}
+                  type="text"
+                  placeholder="Search by title, class, or source"
+                />
+              </div>
+              <button className="btn btn-light">
+                <Filter size={16} />
+                Filters
+              </button>
+            </div>
+            <div className="toolbar-right">
+              <button className="btn btn-light">
+                <Download size={16} />
+                Export CSV
+              </button>
+              <button className="btn btn-dark">Generate Report</button>
+            </div>
+          </div>
+
+          {loading ? (
+            <div className="empty-box">Loading history...</div>
+          ) : error ? (
+            <div className="empty-box" style={{ color: "#b91c1c" }}>{error}</div>
+          ) : (
+            <div className="table-wrap">
+              <table className="custom-table">
+                <thead>
+                  <tr>
+                    <th>ID</th>
+                    <th>Title</th>
+                    <th>Source</th>
+                    <th>Class</th>
+                    <th>Confidence</th>
+                    <th>Model</th>
+                    <th>Date</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {filtered.map((row) => (
+                    <tr key={row.id}>
+                      <td>{row.id}</td>
+                      <td>{row.title}</td>
+                      <td>{row.source}</td>
+                      <td><LabelBadge label={row.label} /></td>
+                      <td>{formatPercent(row.confidence)}</td>
+                      <td>{row.model}</td>
+                      <td>{row.date}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function MlLabPage() {
+  const [report, setReport] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [training, setTraining] = useState(false);
+  const [error, setError] = useState("");
+
+  const loadReport = async () => {
+    setError("");
+    try {
+      const response = await fetch("/api/model/report");
+      if (!response.ok) {
+        throw new Error(`Model report failed (${response.status})`);
+      }
+      const data = await response.json();
+      setReport(data);
+    } catch (err) {
+      console.error(err);
+      setError("Unable to load model report.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    const timer = window.setTimeout(() => {
+      loadReport();
+    }, 0);
+
+    return () => window.clearTimeout(timer);
+  }, []);
+
+  const retrainModel = async () => {
+    setTraining(true);
+    setError("");
+    try {
+      const response = await fetch("/api/model/retrain", { method: "POST" });
+      if (!response.ok) {
+        throw new Error(`Retrain failed (${response.status})`);
+      }
+      await response.json();
+      await loadReport();
+    } catch (err) {
+      console.error(err);
+      setError("Model training failed. Check Python and dataset files.");
+    } finally {
+      setTraining(false);
+    }
+  };
+
+  const matrixLabels = report ? Object.keys(report.confusionMatrix || {}) : [];
+
+  return (
+    <div className="page-section">
+      <section className="stats-grid">
+        <div className="card">
+          <div className="stat-card padded">
+            <div>
+              <p className="muted">Algorithm</p>
+              <h3 className="stat-value compact">{report?.algorithm || "Naive Bayes"}</h3>
+              <p className="small-muted">Python text classifier</p>
+            </div>
+            <div className="stat-icon"><Brain size={20} /></div>
+          </div>
+        </div>
+        <div className="card">
+          <div className="stat-card padded">
+            <div>
+              <p className="muted">Accuracy</p>
+              <h3 className="stat-value">{loading ? "..." : `${report?.accuracy || 0}%`}</h3>
+              <p className="small-muted">Held-out test split</p>
+            </div>
+            <div className="stat-icon"><WandSparkles size={20} /></div>
+          </div>
+        </div>
+        <div className="card">
+          <div className="stat-card padded">
+            <div>
+              <p className="muted">Dataset</p>
+              <h3 className="stat-value">{report?.dataset?.total?.toLocaleString() || "..."}</h3>
+              <p className="small-muted">Articles in MySQL</p>
+            </div>
+            <div className="stat-icon"><Newspaper size={20} /></div>
+          </div>
+        </div>
+        <div className="card">
+          <div className="stat-card padded">
+            <div>
+              <p className="muted">Test Size</p>
+              <h3 className="stat-value">{report?.testSize || "..."}</h3>
+              <p className="small-muted">Evaluation rows</p>
+            </div>
+            <div className="stat-icon"><Activity size={20} /></div>
+          </div>
+        </div>
+      </section>
+
+      {error ? <div className="empty-box" style={{ color: "#b91c1c" }}>{error}</div> : null}
+
+      <section className="grid-two">
+        <div className="card">
+          <div className="card-header row-between">
+            <div>
+              <h3>Training Control</h3>
+              <p>Retrain the Python Multinomial Naive Bayes model from the local dataset.</p>
+            </div>
+            <button className="btn btn-dark" onClick={retrainModel} disabled={training}>
+              <RefreshCcw size={16} />
+              {training ? "Training..." : "Retrain"}
+            </button>
+          </div>
+          <div className="card-body explanation">
+            <p>
+              The training script builds a vocabulary, learns class priors, applies Laplace smoothing,
+              evaluates on a held-out test set, and saves the model for live predictions.
+            </p>
+          </div>
+        </div>
+
+        <div className="card">
+          <div className="card-header">
+            <h3>Dataset Manager</h3>
+            <p>Current class balance used by the model.</p>
+          </div>
+          <div className="card-body stack-gap">
+            {(report?.dataset?.byLabel || []).map((item) => (
+              <div key={item.label}>
+                <div className="progress-label"><span>{item.label}</span><span>{item.count}</span></div>
+                <div className="progress">
+                  <div className="progress-fill" style={{ width: `${Math.max((item.count / Math.max(report.dataset.total, 1)) * 100, 4)}%` }} />
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <div className="card">
+        <div className="card-header">
+          <h3>Confusion Matrix</h3>
+          <p>Rows are actual labels, columns are predicted labels.</p>
+        </div>
+        <div className="card-body">
+          <div className="table-wrap">
+            <table className="custom-table">
+              <thead>
+                <tr>
+                  <th>Actual \ Predicted</th>
+                  {matrixLabels.map((label) => <th key={label}>{label}</th>)}
+                </tr>
+              </thead>
+              <tbody>
+                {matrixLabels.map((actual) => (
+                  <tr key={actual}>
+                    <td><strong>{actual}</strong></td>
+                    {matrixLabels.map((predicted) => (
+                      <td key={predicted}>{report.confusionMatrix?.[actual]?.[predicted] || 0}</td>
+                    ))}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function ReportsPage() {
+  return (
+    <div className="page-section">
+      <div className="grid-two reports-grid">
+        <div className="card">
+          <div className="card-header">
+            <h3>Generate Dynamic Report</h3>
+            <p>Create exportable reports by class, date range, model, or user.</p>
+          </div>
+          <div className="card-body stack-gap">
+            <div className="form-grid">
+              <div>
+                <label className="field-label">Date From</label>
+                <input className="input" type="date" defaultValue="2026-04-01" />
+              </div>
+              <div>
+                <label className="field-label">Date To</label>
+                <input className="input" type="date" defaultValue="2026-04-21" />
+              </div>
+            </div>
+
+            <div>
+              <label className="field-label">Prediction Class</label>
+              <select className="input">
+                <option>All Classes</option>
+                <option>Real</option>
+                <option>Fake</option>
+                <option>Satire</option>
+                <option>Bias</option>
+              </select>
+            </div>
+
+            <div>
+              <label className="field-label">Model Version</label>
+              <select className="input">
+                <option>Logistic Regression v2.1</option>
+                <option>SVM v1.8</option>
+                <option>Naive Bayes v1.4</option>
+              </select>
+            </div>
+
+            <div>
+              <label className="field-label">Export Format</label>
+              <select className="input">
+                <option>CSV</option>
+                <option>Excel</option>
+                <option>JSON</option>
+              </select>
+            </div>
+
+            <div className="button-row">
+              <button className="btn btn-dark">Generate</button>
+              <button className="btn btn-light">Save Template</button>
+            </div>
+          </div>
+        </div>
+
+        <div className="card">
+          <div className="card-header">
+            <h3>Saved Reports</h3>
+            <p>Quick access to previously generated exports and analytics snapshots.</p>
+          </div>
+          <div className="card-body stack-gap">
+            {[
+              { name: "Weekly Fake News Summary", meta: "CSV • 2026-04-21 • 234 rows" },
+              { name: "Confidence Trend by Model", meta: "Excel • 2026-04-18 • 84 rows" },
+              { name: "Analyst Performance Review", meta: "JSON • 2026-04-15 • 58 rows" },
+            ].map((report) => (
+              <div key={report.name} className="list-card">
+                <div>
+                  <p className="item-title">{report.name}</p>
+                  <p className="small-muted">{report.meta}</p>
+                </div>
+                <button className="btn btn-light">Download</button>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function NotificationsPage() {
+  return (
+    <div className="page-section">
+      <div className="card">
+        <div className="card-header row-between">
+          <div>
+            <h3>Real-Time Notifications</h3>
+            <p>WebSocket-powered alerts for predictions, exports, and admin activity.</p>
+          </div>
+          <button className="btn btn-light">Mark all as read</button>
+        </div>
+        <div className="card-body stack-gap">
+          {notificationsData.map((item) => (
+            <div key={item.id} className={`notify-card ${item.unread ? "notify-new" : ""}`}>
+              <div className="notify-left">
+                <div className="notify-icon">
+                  {item.unread ? <Bell size={16} /> : <CheckCircle2 size={16} />}
+                </div>
+                <div>
+                  <div className="notify-title-row">
+                    <p className="item-title">{item.title}</p>
+                    {item.unread && <span className="pill-new">New</span>}
+                  </div>
+                  <p className="small-muted">{item.text}</p>
+                </div>
+              </div>
+              <span className="small-muted">{item.time}</span>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function AdminPage() {
+  const [tab, setTab] = useState("users");
+
+  return (
+    <div className="page-section">
+      <div className="tab-buttons">
+        <button className={`tab-btn ${tab === "users" ? "tab-btn-active" : ""}`} onClick={() => setTab("users")}>Users</button>
+        <button className={`tab-btn ${tab === "models" ? "tab-btn-active" : ""}`} onClick={() => setTab("models")}>Models</button>
+        <button className={`tab-btn ${tab === "system" ? "tab-btn-active" : ""}`} onClick={() => setTab("system")}>System</button>
+      </div>
+
+      {tab === "users" && (
+        <div className="card">
+          <div className="card-header">
+            <h3>User Management</h3>
+            <p>Manage roles, statuses, and access permissions.</p>
+          </div>
+          <div className="card-body">
+            <div className="table-wrap">
+              <table className="custom-table">
+                <thead>
+                  <tr>
+                    <th>Name</th>
+                    <th>Email</th>
+                    <th>Role</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {users.map((user) => (
+                    <tr key={user.email}>
+                      <td>{user.name}</td>
+                      <td>{user.email}</td>
+                      <td>{user.role}</td>
+                      <td>
+                        <span className={user.status === "Active" ? "status-dark" : "status-light"}>
+                          {user.status}
+                        </span>
+                      </td>
+                      <td>
+                        <div className="button-row">
+                          <button className="btn btn-light">Edit</button>
+                          <button className="btn btn-light">Permissions</button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {tab === "models" && (
+        <div className="grid-two">
+          <div className="card">
+            <div className="card-header">
+              <h3>Active Model</h3>
+              <p>Currently deployed prediction engine.</p>
+            </div>
+            <div className="card-body stack-gap">
+              <div className="result-box block">
+                <p className="muted">Name</p>
+                <p className="item-title">TF-IDF + Logistic Regression v2.1</p>
+                <div className="grid-two small-grid">
+                  <div className="mini-card left">
+                    <span className="muted">Accuracy</span>
+                    <p className="small-strong">91.2%</p>
+                  </div>
+                  <div className="mini-card left">
+                    <span className="muted">F1 Score</span>
+                    <p className="small-strong">0.89</p>
+                  </div>
+                </div>
+              </div>
+              <div className="button-row">
+                <button className="btn btn-dark">Set Active</button>
+                <button className="btn btn-light">Upload New Model</button>
+              </div>
+            </div>
+          </div>
+
+          <div className="card">
+            <div className="card-header">
+              <h3>Model Registry</h3>
+              <p>Previous model versions and training metrics.</p>
+            </div>
+            <div className="card-body stack-gap">
+              {[
+                { name: "Logistic Regression v2.1", status: "Production", info: "Accuracy 91.2% • 2026-04-18" },
+                { name: "SVM v1.8", status: "Archived", info: "Accuracy 88.4% • 2026-03-26" },
+                { name: "Naive Bayes v1.4", status: "Archived", info: "Accuracy 84.9% • 2026-02-14" },
+              ].map((model) => (
+                <div key={model.name} className="list-card">
+                  <div>
+                    <p className="item-title">{model.name}</p>
+                    <p className="small-muted">{model.info}</p>
+                  </div>
+                  <span className={model.status === "Production" ? "status-dark" : "status-light"}>
+                    {model.status}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {tab === "system" && (
+        <div className="grid-two">
+          <div className="card">
+            <div className="card-header">
+              <h3>System Health</h3>
+              <p>Overview of platform components.</p>
+            </div>
+            <div className="card-body stack-gap">
+              {[
+                { name: "FastAPI Backend", status: "Operational" },
+                { name: "MySQL Database", status: "Operational" },
+                { name: "Redis / WebSocket", status: "Operational" },
+                { name: "ML Service", status: "Operational" },
+              ].map((service) => (
+                <div key={service.name} className="list-card">
+                  <span className="item-title">{service.name}</span>
+                  <span className="status-dark">{service.status}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div className="card">
+            <div className="card-header">
+              <h3>Quick Admin Actions</h3>
+              <p>Shortcuts for management operations.</p>
+            </div>
+            <div className="card-body admin-actions">
+              <button className="btn btn-light big-btn"><Users size={18} />Create User</button>
+              <button className="btn btn-light big-btn"><Newspaper size={18} />Review Articles</button>
+              <button className="btn btn-light big-btn"><Bell size={18} />Send Notification</button>
+              <button className="btn btn-light big-btn"><FileBarChart size={18} />Download Logs</button>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function SettingsPage() {
+  return (
+    <div className="grid-two">
+      <div className="card">
+        <div className="card-header">
+          <h3>Profile Settings</h3>
+          <p>Update personal information and preferences.</p>
+        </div>
+        <div className="card-body stack-gap">
+          <div className="form-grid">
+            <div>
+              <label className="field-label">First Name</label>
+              <input className="input" defaultValue="Dion" />
+            </div>
+            <div>
+              <label className="field-label">Last Name</label>
+              <input className="input" defaultValue="Pllana" />
+            </div>
+          </div>
+          <div>
+            <label className="field-label">Email</label>
+            <input className="input" defaultValue="dion@demo.com" />
+          </div>
+          <div>
+            <label className="field-label">Password</label>
+            <input className="input" type="password" defaultValue="password123" />
+          </div>
+          <button className="btn btn-dark">Save Changes</button>
+        </div>
+      </div>
+
+      <div className="card">
+        <div className="card-header">
+          <h3>Platform Preferences</h3>
+          <p>Control notifications and application behavior.</p>
+        </div>
+        <div className="card-body stack-gap">
+          {[
+            "Enable real-time notifications",
+            "Email me when reports are ready",
+            "Auto-save analyzed results",
+            "Show explanation panel after prediction",
+          ].map((item, idx) => (
+            <div key={item} className="switch-row big">
+              <span>{item}</span>
+              <input type="checkbox" defaultChecked={idx !== 1} />
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function LoginPage({ onLogin }) {
+  const [email, setEmail] = useState("dion@demo.com");
+  const [password, setPassword] = useState("password123");
+  const [remember, setRemember] = useState(true);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+
+  const submitLogin = async () => {
+    setLoading(true);
+    setError("");
+
+    try {
+      const response = await fetch("/api/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password }),
+      });
+
+      if (!response.ok) throw new Error("Invalid login");
+      const data = await response.json();
+      onLogin(data.user, data.token, remember);
+    } catch (err) {
+      console.error(err);
+      setError("Email ose password nuk eshte i sakte.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="login-page">
+      <div className="auth-preview login-panel">
+      <div className="auth-left">
+        <p className="auth-label">Welcome back</p>
+        <h2>Analyze online news with AI-powered confidence.</h2>
+        <p className="auth-text">
+          Detect fake, satire, bias, and real news from one clean dashboard built for teams, students, and researchers.
+        </p>
+        <div className="auth-points">
+          <div><CheckCircle2 size={16} /> JWT authentication and role-based access</div>
+          <div><CheckCircle2 size={16} /> Real-time WebSocket notifications</div>
+          <div><CheckCircle2 size={16} /> Reports, exports, and ML integration</div>
+        </div>
+      </div>
+
+      <div className="auth-right">
+        <div className="auth-form">
+          <div>
+            <h3>Sign in</h3>
+            <p>Use demo credentials or a user from MySQL.</p>
+          </div>
+          <div>
+            <label className="field-label">Email</label>
+            <input className="input" value={email} onChange={(event) => setEmail(event.target.value)} placeholder="you@example.com" />
+          </div>
+          <div>
+            <label className="field-label">Password</label>
+            <input className="input" value={password} onChange={(event) => setPassword(event.target.value)} type="password" placeholder="password" />
+          </div>
+          {error ? <div className="empty-box" style={{ color: "#b91c1c" }}>{error}</div> : null}
+          <div className="remember-row">
+            <label><input type="checkbox" checked={remember} onChange={(event) => setRemember(event.target.checked)} /> Remember me</label>
+            <button className="link-btn" type="button">Forgot password?</button>
+          </div>
+          <button className="btn btn-dark btn-full" disabled={loading} onClick={submitLogin} type="button">{loading ? "Signing in..." : "Login"}</button>
+          <button className="btn btn-light btn-full" type="button">Create account</button>
+        </div>
+      </div>
+      </div>
+    </div>
+  );
+}
+
+export default function App() {
+  const [activePage, setActivePage] = useState("dashboard");
+  const [mobileOpen, setMobileOpen] = useState(false);
+  const [session, setSession] = useState(() => {
+    const saved = window.localStorage.getItem("fake-news-session") || window.sessionStorage.getItem("fake-news-session");
+    return saved ? JSON.parse(saved) : null;
+  });
+
+  const handleLogin = (user, token, remember) => {
+    const nextSession = { user, token };
+    setSession(nextSession);
+    const storage = remember ? window.localStorage : window.sessionStorage;
+    storage.setItem("fake-news-session", JSON.stringify(nextSession));
+    if (remember) window.sessionStorage.removeItem("fake-news-session");
+    else window.localStorage.removeItem("fake-news-session");
+  };
+
+  const handleLogout = () => {
+    setSession(null);
+    setActivePage("dashboard");
+    window.localStorage.removeItem("fake-news-session");
+    window.sessionStorage.removeItem("fake-news-session");
+  };
+
+  const renderPage = () => {
+    switch (activePage) {
+      case "dashboard":
+        return <DashboardPage />;
+      case "analyze":
+        return <AnalyzePage />;
+      case "mlLab":
+        return <MlLabPage />;
+      case "history":
+        return <HistoryPage />;
+      case "reports":
+        return <ReportsPage />;
+      case "notifications":
+        return <NotificationsPage />;
+      case "admin":
+        return <AdminPage />;
+      case "settings":
+        return <SettingsPage />;
+      default:
+        return <DashboardPage />;
+    }
+  };
+
+  if (!session) {
+    return (
+      <div className="app-shell">
+        <LoginPage onLogin={handleLogin} />
+      </div>
+    );
+  }
+
+  return (
+    <div className="app-shell">
+      <InlineTestRunner />
+      <Sidebar
+        activePage={activePage}
+        setActivePage={setActivePage}
+        mobileOpen={mobileOpen}
+        setMobileOpen={setMobileOpen}
+        user={session.user}
+        onLogout={handleLogout}
+      />
+
+      <main className="main-content">
+        <Topbar setMobileOpen={setMobileOpen} user={session.user} />
+        <div className="content-area">
+          {renderPage()}
+        </div>
+      </main>
+    </div>
+  );
+}
