@@ -8,8 +8,8 @@ import { resolvePythonInvocation } from "../utils/pythonCommand.js";
 import { buildExtractiveSummary, extractKeywordCandidates } from "../utils/text.js";
 import { getHostname, isTrustedSource } from "./articleFetchService.js";
 
-const modelMetricsPath = path.resolve("backend", "models", "model_metrics.json");
-const predictionScriptPath = path.resolve("ml", "predict_model.py");
+const modelMetricsPaths = [path.resolve("ml", "metrics", "metrics.json"), path.resolve("backend", "models", "model_metrics.json")];
+const predictionScriptPath = path.resolve("ml", "predict.py");
 const trainingScriptPath = path.resolve("ml", "train_models.py");
 
 const fakePatterns = [
@@ -40,21 +40,49 @@ function getConfidenceThreshold() {
 }
 
 function formatProbabilityMap(probabilities = {}) {
-  return Object.fromEntries(
-    Object.entries(probabilities).map(([label, value]) => [normalizeResultLabel(label), clampConfidence(value)])
-  );
+  const normalized = {
+    REAL: 0,
+    FAKE: 0,
+    UNCERTAIN: 0,
+  };
+
+  Object.entries(probabilities).forEach(([label, value]) => {
+    normalized[normalizeResultLabel(label)] = clampConfidence(value);
+  });
+
+  return normalized;
 }
 
 function formatBinaryProbabilities(probabilities = {}) {
   const normalized = formatProbabilityMap(probabilities);
   const realProbability = clampConfidence(normalized.REAL);
   const fakeProbability = clampConfidence(normalized.FAKE);
+
+  if (realProbability <= 0 && fakeProbability <= 0) {
+    return {
+      REAL: 0.5,
+      FAKE: 0.5,
+    };
+  }
+
   const total = realProbability + fakeProbability || 1;
 
   return {
     REAL: Number((realProbability / total).toFixed(4)),
     FAKE: Number((fakeProbability / total).toFixed(4)),
   };
+}
+
+async function readFirstMetricsFile() {
+  for (const filePath of modelMetricsPaths) {
+    try {
+      return await readFile(filePath, "utf8");
+    } catch {
+      // Try the next location.
+    }
+  }
+
+  throw new Error("No model metrics file was found.");
 }
 
 function normalizeInfluentialKeywords(items = [], fallbackTerms = []) {
@@ -131,14 +159,14 @@ function runPythonJsonScript(scriptPath, payload = null) {
   });
 }
 
-function buildExplanation({ label, source, explanationKeywords, confidenceScore, threshold, model }) {
+function buildExplanation({ label, source, explanationKeywords, confidenceScore, threshold, model, warning }) {
   const hostname = getHostname(source);
   const keywords = explanationKeywords.slice(0, 6).join(", ");
   const readableThreshold = Math.round(threshold * 100);
   const readableConfidence = Math.round(confidenceScore * 100);
 
   if (label === "UNCERTAIN") {
-    return `The model could not make a confident call. Confidence stayed below the ${readableThreshold}% threshold, so the article was marked UNCERTAIN. Key terms considered: ${keywords || "not enough strong keywords"}.`;
+    return `The model marked this article UNCERTAIN. ${warning || `Confidence did not clear the ${readableThreshold}% threshold for a reliable verdict.`} Key terms considered: ${keywords || "not enough strong keywords"}.`;
   }
 
   if (label === "FAKE") {
@@ -174,10 +202,10 @@ function buildFallbackPrediction({ headline = "", text = "", source = "", url = 
 
   const probabilities =
     label === "FAKE"
-      ? { FAKE: confidenceScore, REAL: 1 - confidenceScore }
+      ? { FAKE: confidenceScore, REAL: Number((1 - confidenceScore).toFixed(4)), UNCERTAIN: 0 }
       : label === "REAL"
-        ? { REAL: confidenceScore, FAKE: 1 - confidenceScore }
-        : { REAL: 0.5, FAKE: 0.5 };
+        ? { REAL: confidenceScore, FAKE: Number((1 - confidenceScore).toFixed(4)), UNCERTAIN: 0 }
+        : { REAL: 0.4, FAKE: 0.4, UNCERTAIN: 0.2 };
 
   return {
     label,
@@ -185,7 +213,8 @@ function buildFallbackPrediction({ headline = "", text = "", source = "", url = 
     confidenceScore,
     confidence: Math.round(confidenceScore * 100),
     probabilities: formatProbabilityMap(probabilities),
-    modelProbabilities: formatBinaryProbabilities(probabilities),
+    modelProbabilities: formatProbabilityMap(probabilities),
+    binaryProbabilities: formatBinaryProbabilities(probabilities),
     explanationKeywords: keywordCandidates,
     influentialKeywords: normalizeInfluentialKeywords([], keywordCandidates),
     summary: buildExtractiveSummary({ headline, text }),
@@ -207,12 +236,14 @@ export async function predictArticle({ headline = "", text = "", source = "", ur
       text,
       confidence_threshold: threshold,
     });
-    const label = normalizeResultLabel(result.label);
-    const confidenceScore = clampConfidence(result.confidence_score ?? Number(result.confidence || 0) / 100);
+    const label = normalizeResultLabel(result.prediction || result.label);
+    const rawConfidence = Number(result.confidence_score ?? result.confidence ?? 0);
+    const confidenceScore = clampConfidence(rawConfidence > 1 ? rawConfidence / 100 : rawConfidence);
     const fallbackKeywords = extractKeywordCandidates(`${headline} ${text}`, 8);
     const explanationKeywords = Array.isArray(result.explanation_keywords) && result.explanation_keywords.length ? result.explanation_keywords : fallbackKeywords;
     const influentialKeywords = normalizeInfluentialKeywords(result.top_influential_keywords, explanationKeywords);
-    const modelProbabilities = formatBinaryProbabilities(result.model_probabilities || result.probabilities);
+    const rawModelProbabilities = formatProbabilityMap(result.model_probabilities || result.probabilities);
+    const binaryProbabilities = formatBinaryProbabilities(result.binary_probabilities || result.model_probabilities || result.probabilities);
     const warning =
       result.warning ||
       (label === "UNCERTAIN"
@@ -225,8 +256,9 @@ export async function predictArticle({ headline = "", text = "", source = "", ur
       predictedLabel: normalizeResultLabel(result.predicted_label || result.label),
       confidenceScore,
       confidence: Math.round(confidenceScore * 100),
-      probabilities: formatProbabilityMap(result.probabilities),
-      modelProbabilities,
+      probabilities: rawModelProbabilities,
+      modelProbabilities: rawModelProbabilities,
+      binaryProbabilities,
       explanationKeywords,
       influentialKeywords,
       summary: buildExtractiveSummary({ headline, text }),
@@ -248,6 +280,7 @@ export async function predictArticle({ headline = "", text = "", source = "", ur
         confidenceScore,
         threshold,
         model: modelName,
+        warning,
       }),
     };
   } catch (error) {
@@ -263,6 +296,7 @@ export async function predictArticle({ headline = "", text = "", source = "", ur
         confidenceScore: fallback.confidenceScore,
         threshold,
         model: fallback.model,
+        warning: fallback.warning,
       }),
     };
   }
@@ -270,7 +304,7 @@ export async function predictArticle({ headline = "", text = "", source = "", ur
 
 export async function getModelMetrics() {
   try {
-    const content = await readFile(modelMetricsPath, "utf8");
+    const content = await readFirstMetricsFile();
     const metrics = JSON.parse(content);
     return {
       ...metrics,

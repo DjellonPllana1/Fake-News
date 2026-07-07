@@ -14,6 +14,24 @@ dist-ssr
 *.local
 __pycache__/
 *.pyc
+ml/datasets/raw/*
+!ml/datasets/raw/.gitkeep
+!ml/datasets/raw/README.md
+!ml/datasets/raw/kaggle/
+!ml/datasets/raw/liar/
+!ml/datasets/raw/fever/
+ml/datasets/raw/kaggle/*
+!ml/datasets/raw/kaggle/.gitkeep
+ml/datasets/raw/liar/*
+!ml/datasets/raw/liar/.gitkeep
+ml/datasets/raw/fever/*
+!ml/datasets/raw/fever/.gitkeep
+ml/datasets/processed/*
+!ml/datasets/processed/.gitkeep
+ml/models/*
+!ml/models/.gitkeep
+ml/metrics/*
+!ml/metrics/.gitkeep
 
 # Editor directories and files
 .vscode/*

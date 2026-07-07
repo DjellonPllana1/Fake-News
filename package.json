@@ -7,6 +7,7 @@
     "backend": "node backend/server.js",
     "seed": "node backend/seed-database.js",
     "seed:mysql": "node backend/seed-mysql.js",
+    "merge:datasets": "node ml/run-python.js ml/merge_datasets.py",
     "train:models": "node ml/run-python.js ml/train_models.py",
     "evaluate:models": "node ml/run-python.js ml/evaluate_models.py",
     "train:nb": "npm run train:models",

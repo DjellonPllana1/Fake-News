@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { api } from "../api";
+import { ListPageSkeleton } from "../components/Skeleton";
 import { SourceReputationBadge } from "../components/SourceReputationCard";
 
 export function HistoryPage({ refreshToken }) {
@@ -83,7 +84,7 @@ export function HistoryPage({ refreshToken }) {
         </div>
       </div>
 
-      {state.loading ? <div className="empty-state">Loading history...</div> : null}
+      {state.loading ? <ListPageSkeleton items={4} /> : null}
       {state.error ? <div className="inline-error">{state.error}</div> : null}
 
       {!state.loading && !state.error ? (

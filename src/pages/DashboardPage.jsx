@@ -31,6 +31,7 @@ import {
   TrendingUp,
 } from "lucide-react";
 import { api } from "../api";
+import { DashboardSkeleton } from "../components/Skeleton";
 import { StatCard } from "../components/StatCard";
 
 const chartColors = {
@@ -168,11 +169,11 @@ export function DashboardPage({ refreshToken }) {
   }, [refreshToken]);
 
   if (state.loading) {
-    return <div className="panel empty-state">Loading executive dashboard...</div>;
+    return <DashboardSkeleton />;
   }
 
   if (state.error) {
-    return <div className="panel empty-state">{state.error}</div>;
+    return <div className="panel empty-state">Unable to load the executive dashboard. {state.error}</div>;
   }
 
   const {
@@ -247,18 +248,19 @@ export function DashboardPage({ refreshToken }) {
       </section>
 
       <section className="stats-grid dashboard-stats-grid">
-        <StatCard title="Total Analyses" value={liveStatistics.totalAnalyses} hint="All decisions captured in the platform" />
-        <StatCard title="Today" value={liveStatistics.analysesToday} hint="Analyses completed in the current day" tone="real" />
-        <StatCard title="This Week" value={liveStatistics.analysesThisWeek} hint="Weekly platform throughput" tone="medium" />
-        <StatCard title="This Month" value={liveStatistics.analysesThisMonth} hint="Monthly workload volume" tone="neutral" />
-        <StatCard title="Avg Confidence" value={`${liveStatistics.averageConfidence}%`} hint="Average confidence across all saved analyses" tone="real" />
-        <StatCard title="Avg Trust" value={`${liveStatistics.averageTrustScore}%`} hint="Average final trust score across decisions" tone="medium" />
-        <StatCard title="High Risk" value={liveStatistics.highRiskCount} hint="Analyses marked as high risk" tone="fake" />
+        <StatCard title="Total Analyses" value={liveStatistics.totalAnalyses} hint="All decisions captured in the platform" icon={Activity} />
+        <StatCard title="Today" value={liveStatistics.analysesToday} hint="Analyses completed in the current day" tone="real" icon={CalendarDays} />
+        <StatCard title="This Week" value={liveStatistics.analysesThisWeek} hint="Weekly platform throughput" tone="medium" icon={TrendingUp} />
+        <StatCard title="This Month" value={liveStatistics.analysesThisMonth} hint="Monthly workload volume" tone="neutral" icon={Clock3} />
+        <StatCard title="Avg Confidence" value={`${liveStatistics.averageConfidence}%`} hint="Average confidence across all saved analyses" tone="real" icon={BrainCircuit} />
+        <StatCard title="Avg Trust" value={`${liveStatistics.averageTrustScore}%`} hint="Average final trust score across decisions" tone="medium" icon={ShieldCheck} />
+        <StatCard title="High Risk" value={liveStatistics.highRiskCount} hint="Analyses marked as high risk" tone="fake" icon={AlertTriangle} />
         <StatCard
           title="Suspicious Domains"
           value={liveStatistics.suspiciousDomainMentions}
           hint="Analyses linked to suspicious source domains"
           tone="uncertain"
+          icon={Globe2}
         />
       </section>
 

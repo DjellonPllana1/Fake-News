@@ -32,7 +32,7 @@ function formatNumber(value, decimals) {
   }).format(value);
 }
 
-export function StatCard({ title, value, hint, tone = "neutral" }) {
+export function StatCard({ title, value, hint, tone = "neutral", icon: Icon = null }) {
   const parsed = parseDisplayValue(value);
   const [displayValue, setDisplayValue] = useState(() => {
     if (!parsed) {
@@ -71,7 +71,14 @@ export function StatCard({ title, value, hint, tone = "neutral" }) {
 
   return (
     <article className={`stat-card stat-card--${tone}`}>
-      <span className="eyebrow">{title}</span>
+      <div className="stat-card__header">
+        <span className="eyebrow">{title}</span>
+        {Icon ? (
+          <span className="stat-card__icon">
+            <Icon size={16} />
+          </span>
+        ) : null}
+      </div>
       <strong>{parsed ? displayValue : value}</strong>
       <p>{hint}</p>
     </article>

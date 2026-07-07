@@ -1,5 +1,7 @@
-import { useDeferredValue, useEffect, useState } from "react";
+import { useCallback, useDeferredValue, useEffect, useState } from "react";
 import { api } from "../api";
+import { useNotifications } from "../components/Notifications";
+import { ListPageSkeleton, TableSkeleton } from "../components/Skeleton";
 
 function SummaryCard({ label, value, detail }) {
   return (
@@ -61,8 +63,9 @@ export function AdminDashboardPage() {
     deletingDataset: "",
     deletingAnalysis: "",
   });
+  const { notify } = useNotifications();
 
-  async function loadDashboard() {
+  const loadDashboard = useCallback(async () => {
     try {
       const data = await api.getAdminDashboard();
       setDashboardState({
@@ -100,12 +103,17 @@ export function AdminDashboardPage() {
         error: error.message,
         data: null,
       });
+      notify({
+        tone: "error",
+        title: "Admin dashboard unavailable",
+        message: error.message,
+      });
     }
-  }
+  }, [notify]);
 
   useEffect(() => {
     loadDashboard();
-  }, []);
+  }, [loadDashboard]);
 
   useEffect(() => {
     let isActive = true;
@@ -199,11 +207,21 @@ export function AdminDashboardPage() {
     try {
       await api.updateAdminUser(email, userDrafts[email]);
       await loadDashboard();
+      notify({
+        tone: "success",
+        title: "User updated",
+        message: `${email} was updated successfully.`,
+      });
     } catch (error) {
       setDashboardState((current) => ({
         ...current,
         error: error.message,
       }));
+      notify({
+        tone: "error",
+        title: "User update failed",
+        message: error.message,
+      });
     } finally {
       setActionState((current) => ({ ...current, savingUser: "" }));
     }
@@ -215,11 +233,21 @@ export function AdminDashboardPage() {
     try {
       await api.retrainAdminModels();
       await loadDashboard();
+      notify({
+        tone: "success",
+        title: "Models retrained",
+        message: "Admin retraining completed and dashboard data has been refreshed.",
+      });
     } catch (error) {
       setDashboardState((current) => ({
         ...current,
         error: error.message,
       }));
+      notify({
+        tone: "error",
+        title: "Retraining failed",
+        message: error.message,
+      });
     } finally {
       setActionState((current) => ({ ...current, retraining: false }));
     }
@@ -233,11 +261,21 @@ export function AdminDashboardPage() {
       const data = await api.updateAdminConfiguration(configDraft);
       setConfigDraft(data.editable || configDraft);
       await loadDashboard();
+      notify({
+        tone: "success",
+        title: "Configuration saved",
+        message: "Admin configuration changes are now active.",
+      });
     } catch (error) {
       setDashboardState((current) => ({
         ...current,
         error: error.message,
       }));
+      notify({
+        tone: "error",
+        title: "Configuration save failed",
+        message: error.message,
+      });
     } finally {
       setActionState((current) => ({ ...current, savingConfig: false }));
     }
@@ -253,11 +291,21 @@ export function AdminDashboardPage() {
     try {
       await api.deleteAdminDataset(articleId);
       await loadDashboard();
+      notify({
+        tone: "success",
+        title: "Dataset record deleted",
+        message: `${articleId} was removed from the dataset.`,
+      });
     } catch (error) {
       setDatasetState((current) => ({
         ...current,
         error: error.message,
       }));
+      notify({
+        tone: "error",
+        title: "Dataset deletion failed",
+        message: error.message,
+      });
     } finally {
       setActionState((current) => ({ ...current, deletingDataset: "" }));
     }
@@ -273,18 +321,43 @@ export function AdminDashboardPage() {
     try {
       await api.deleteAdminAnalysis(analysisId);
       await loadDashboard();
+      notify({
+        tone: "success",
+        title: "Analysis deleted",
+        message: `${analysisId} was removed from saved history.`,
+      });
     } catch (error) {
       setAnalysisState((current) => ({
         ...current,
         error: error.message,
       }));
+      notify({
+        tone: "error",
+        title: "Analysis deletion failed",
+        message: error.message,
+      });
     } finally {
       setActionState((current) => ({ ...current, deletingAnalysis: "" }));
     }
   }
 
   if (dashboardState.loading) {
-    return <div className="panel empty-state">Loading admin dashboard...</div>;
+    return (
+      <div className="page-grid admin-grid">
+        <section className="panel admin-hero">
+          <TableSkeleton rows={5} />
+        </section>
+        <section className="panel admin-panel admin-panel--wide">
+          <TableSkeleton rows={6} />
+        </section>
+        <section className="panel admin-panel">
+          <TableSkeleton rows={6} />
+        </section>
+        <section className="panel admin-panel admin-panel--wide">
+          <ListPageSkeleton items={3} />
+        </section>
+      </div>
+    );
   }
 
   if (dashboardState.error && !dashboardState.data) {

@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { api } from "../api";
+import { TableSkeleton } from "../components/Skeleton";
 
 function formatValue(value) {
   if (typeof value === "boolean") {
@@ -67,7 +68,19 @@ export function SystemDiagnosticsPage() {
   }, []);
 
   if (state.loading) {
-    return <div className="panel empty-state">Loading system diagnostics...</div>;
+    return (
+      <div className="page-grid">
+        <section className="panel hero-panel">
+          <TableSkeleton rows={4} />
+        </section>
+        <section className="panel list-panel">
+          <TableSkeleton rows={6} />
+        </section>
+        <section className="panel list-panel">
+          <TableSkeleton rows={6} />
+        </section>
+      </div>
+    );
   }
 
   if (state.error) {

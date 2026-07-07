@@ -155,6 +155,7 @@ export async function analyzeArticle(payload) {
     influentialKeywords: intelligence.influentialKeywords,
     probabilities: intelligence.probabilities,
     modelProbabilities: intelligence.modelProbabilities,
+    binaryModelProbabilities: intelligence.binaryModelProbabilities,
     suspiciousSentences: intelligence.suspiciousSentences,
     ruleFindings: intelligence.ruleFindings,
     sentiment: intelligence.sentiment,

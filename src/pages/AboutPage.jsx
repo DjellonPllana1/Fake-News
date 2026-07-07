@@ -1,53 +1,78 @@
+import { BrainCircuit, SearchCheck, ShieldCheck } from "lucide-react";
+
+function AboutFeature({ icon, title, description }) {
+  return (
+    <article className="feature-card">
+      <div className="feature-card__icon">{icon}</div>
+      <div>
+        <strong>{title}</strong>
+        <p>{description}</p>
+      </div>
+    </article>
+  );
+}
+
 export function AboutPage() {
   return (
     <div className="page-grid">
       <section className="panel hero-panel">
         <span className="eyebrow">Platform Summary</span>
-        <h2>Verity Lens is built for transparent fake news detection, not just single-label guesses.</h2>
+        <h2>Verity Lens is built for transparent credibility review, not just a single classifier output.</h2>
         <p>
-          The platform preprocesses article text, compares three TF-IDF classifiers, combines the best model with a rule-based credibility engine, and returns
-          an UNCERTAIN outcome when confidence is too low for a responsible call.
+          The platform combines TF-IDF model comparison, rule-based credibility scoring, source reputation, claim verification, and uncertainty-aware decisions
+          into an analyst-ready product experience.
+        </p>
+
+        <div className="feature-grid">
+          <AboutFeature
+            icon={<BrainCircuit size={18} />}
+            title="Model intelligence"
+            description="Multinomial Naive Bayes, Logistic Regression, and Linear SVM are benchmarked, versioned, and surfaced with metrics."
+          />
+          <AboutFeature
+            icon={<SearchCheck size={18} />}
+            title="Evidence verification"
+            description="Claims are extracted and compared against trusted-source coverage to identify support, contradiction, or missing evidence."
+          />
+          <AboutFeature
+            icon={<ShieldCheck size={18} />}
+            title="Trust scoring"
+            description="Machine learning, domain reputation, writing quality, and metadata quality all contribute to the final Trust Score."
+          />
+        </div>
+      </section>
+
+      <section className="panel prose-panel">
+        <h3>Explainability first</h3>
+        <p>
+          Every analysis returns prediction confidence, final probability distribution, influential keywords, suspicious sentences, named entities, rule
+          findings, recommendations, and a plain-language explanation of why the score moved in a specific direction.
+        </p>
+
+        <h3>Responsible ambiguity</h3>
+        <p>
+          When the model and supporting evidence do not cross the configured confidence threshold, the article is labeled UNCERTAIN instead of forcing an
+          overconfident verdict.
         </p>
       </section>
 
       <section className="panel prose-panel">
         <h3>What the backend does</h3>
         <p>
-          The Express backend is organized into routes, controllers, services, middleware, and utilities. Every response follows a consistent JSON envelope and
-          all core flows use validation before they reach the business logic.
+          The Express backend is organized into routes, controllers, services, middleware, and utilities. Core flows validate payloads, keep response shapes
+          consistent, and isolate ML, NLP, evidence, trust, export, and diagnostics logic behind clean service boundaries.
         </p>
 
-        <h3>How model decisions work</h3>
+        <h3>What the frontend does</h3>
         <p>
-          During training, the platform evaluates Multinomial Naive Bayes, Logistic Regression, and Linear SVM. The best model is saved automatically together
-          with confusion matrices, weighted classification metrics, preprocessing metadata, and version information.
+          The React application turns those services into a working analyst interface: modern dashboards, searchable history, export tools, system diagnostics,
+          and role-aware admin operations.
         </p>
 
-        <h3>How explainability works</h3>
-        <p>
-          Every analysis returns class probabilities, influential keywords, suspicious sentences, sentiment, named entities, metadata gaps, and rule findings so
-          reviewers can understand why the final Trust Score moved up or down.
-        </p>
-
-        <h3>How trust scoring works</h3>
-        <p>
-          The final Trust Score blends ML probability, clickbait and language signals, writing quality, author and publication metadata, domain reputation, article
-          length, and source reliability into a configurable 0-100 score with plain-language reasons.
-        </p>
-
-        <h3>Why UNCERTAIN matters</h3>
-        <p>
-          News detection should not force a hard decision when the evidence is weak. A configurable confidence threshold in the environment file makes that
-          behavior explicit and easier to tune for different operating contexts.
-        </p>
-      </section>
-
-      <section className="panel prose-panel">
-        <h3>Core Features</h3>
-        <p>Manual article analysis with summary, sentiment, entities, influential keywords, suspicious sentences, and recommendation guidance.</p>
-        <p>URL-based extraction for direct article fetching with author and publication date detection where available.</p>
-        <p>Saved analysis history with search, CSV export, and PDF export.</p>
-        <p>Dashboard analytics, model metrics, retraining support, health checks, and system diagnostics.</p>
+        <h3>Core product outcomes</h3>
+        <p>Manual article analysis with explainable scoring, sentiment, keywords, entities, and recommendations.</p>
+        <p>URL ingestion with extraction preview, source reputation context, and one-click credibility review.</p>
+        <p>Executive analytics, model metrics, retraining support, health checks, diagnostics, and professional reporting exports.</p>
       </section>
     </div>
   );

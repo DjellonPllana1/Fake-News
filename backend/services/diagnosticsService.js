@@ -4,8 +4,11 @@ import path from "path";
 import { readDatabase } from "../database.js";
 import { getModelMetrics } from "./modelService.js";
 
-const modelArtifactPath = path.resolve("backend", "models", "best_model.joblib");
-const metricsArtifactPath = path.resolve("backend", "models", "model_metrics.json");
+const modelArtifactPaths = [path.resolve("ml", "models", "best_model.pkl"), path.resolve("backend", "models", "best_model.joblib")];
+const vectorizerArtifactPath = path.resolve("ml", "models", "vectorizer.pkl");
+const metricsArtifactPaths = [path.resolve("ml", "metrics", "metrics.json"), path.resolve("backend", "models", "model_metrics.json")];
+const modelCardPath = path.resolve("ml", "models", "model_card.json");
+const datasetReportPath = path.resolve("ml", "metrics", "dataset_report.json");
 
 async function safeStat(filePath) {
   try {
@@ -15,12 +18,30 @@ async function safeStat(filePath) {
   }
 }
 
+async function findFirstExisting(paths) {
+  for (const filePath of paths) {
+    const stat = await safeStat(filePath);
+
+    if (stat) {
+      return {
+        path: filePath,
+        stat,
+      };
+    }
+  }
+
+  return null;
+}
+
 export async function getSystemDiagnostics() {
-  const [database, metrics, modelStat, metricsStat] = await Promise.all([
+  const [database, metrics, modelArtifact, metricsArtifact, vectorizerStat, modelCardStat, datasetReportStat] = await Promise.all([
     readDatabase(),
     getModelMetrics(),
-    safeStat(modelArtifactPath),
-    safeStat(metricsArtifactPath),
+    findFirstExisting(modelArtifactPaths),
+    findFirstExisting(metricsArtifactPaths),
+    safeStat(vectorizerArtifactPath),
+    safeStat(modelCardPath),
+    safeStat(datasetReportPath),
   ]);
   const memory = process.memoryUsage();
 
@@ -55,11 +76,17 @@ export async function getSystemDiagnostics() {
       databaseArticles: database.articles.length,
       databaseAnalyses: database.analyses.length,
       lastAnalysisAt: database.meta.lastAnalysisAt || null,
-      modelArtifactExists: Boolean(modelStat),
-      modelArtifactSizeKb: modelStat ? Math.round(modelStat.size / 1024) : 0,
-      modelArtifactUpdatedAt: modelStat?.mtime?.toISOString() || null,
-      metricsArtifactExists: Boolean(metricsStat),
-      metricsArtifactUpdatedAt: metricsStat?.mtime?.toISOString() || null,
+      modelArtifactExists: Boolean(modelArtifact),
+      modelArtifactPath: modelArtifact?.path ? path.relative(process.cwd(), modelArtifact.path) : null,
+      modelArtifactSizeKb: modelArtifact?.stat ? Math.round(modelArtifact.stat.size / 1024) : 0,
+      modelArtifactUpdatedAt: modelArtifact?.stat?.mtime?.toISOString() || null,
+      vectorizerArtifactExists: Boolean(vectorizerStat),
+      vectorizerArtifactUpdatedAt: vectorizerStat?.mtime?.toISOString() || null,
+      metricsArtifactExists: Boolean(metricsArtifact),
+      metricsArtifactPath: metricsArtifact?.path ? path.relative(process.cwd(), metricsArtifact.path) : null,
+      metricsArtifactUpdatedAt: metricsArtifact?.stat?.mtime?.toISOString() || null,
+      modelCardExists: Boolean(modelCardStat),
+      datasetReportExists: Boolean(datasetReportStat),
     },
     model: {
       status: metrics.status || "trained",

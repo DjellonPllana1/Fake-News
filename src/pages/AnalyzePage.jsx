@@ -1,6 +1,9 @@
+import { FileSearch, ShieldCheck, Sparkles, TextSearch } from "lucide-react";
 import { useState } from "react";
 import { api } from "../api";
 import { AnalysisResultCard } from "../components/AnalysisResultCard";
+import { useNotifications } from "../components/Notifications";
+import { SkeletonBlock } from "../components/Skeleton";
 
 export function AnalyzePage({ onAnalysisSaved }) {
   const [form, setForm] = useState({
@@ -16,6 +19,7 @@ export function AnalyzePage({ onAnalysisSaved }) {
     error: "",
     result: null,
   });
+  const { notify } = useNotifications();
 
   function updateField(key, value) {
     setForm((current) => ({
@@ -35,8 +39,18 @@ export function AnalyzePage({ onAnalysisSaved }) {
       });
       setState({ loading: false, error: "", result: data.analysis });
       onAnalysisSaved();
+      notify({
+        tone: "success",
+        title: "Analysis completed",
+        message: `${data.analysis.label} prediction generated with ${data.analysis.confidence}% confidence.`,
+      });
     } catch (error) {
       setState({ loading: false, error: error.message, result: null });
+      notify({
+        tone: "error",
+        title: "Analysis failed",
+        message: error.message,
+      });
     }
   }
 
@@ -47,7 +61,32 @@ export function AnalyzePage({ onAnalysisSaved }) {
           <div>
             <span className="eyebrow">Manual Input</span>
             <h2>Analyze an article</h2>
+            <p>Paste full article text and metadata to generate a confidence-backed credibility report.</p>
           </div>
+        </div>
+
+        <div className="form-panel__hero">
+          <article className="mini-signal-card">
+            <FileSearch size={18} />
+            <div>
+              <strong>Structured intake</strong>
+              <span>Headline, source, byline, and publication context improve downstream scoring.</span>
+            </div>
+          </article>
+          <article className="mini-signal-card">
+            <TextSearch size={18} />
+            <div>
+              <strong>Explainable output</strong>
+              <span>Probability, evidence, suspicious language, and entity metadata are returned together.</span>
+            </div>
+          </article>
+          <article className="mini-signal-card">
+            <ShieldCheck size={18} />
+            <div>
+              <strong>Responsible defaults</strong>
+              <span>Low-confidence results become UNCERTAIN instead of forcing a weak label.</span>
+            </div>
+          </article>
         </div>
 
         <label className="field">
@@ -82,7 +121,7 @@ export function AnalyzePage({ onAnalysisSaved }) {
             rows="16"
             value={form.text}
             onChange={(event) => updateField("text", event.target.value)}
-            placeholder="Paste the article body here for TF-IDF analysis"
+            placeholder="Paste the article body here for explainable TF-IDF analysis"
           />
         </label>
 
@@ -93,15 +132,55 @@ export function AnalyzePage({ onAnalysisSaved }) {
 
         {state.error ? <div className="inline-error">{state.error}</div> : null}
 
-        <button type="submit" className="primary-button" disabled={state.loading}>
-          {state.loading ? "Analyzing..." : "Analyze Article"}
-        </button>
+        <div className="button-row">
+          <button type="submit" className="primary-button" disabled={state.loading}>
+            {state.loading ? "Analyzing..." : "Run Analysis"}
+          </button>
+          <button
+            type="button"
+            className="ghost-button"
+            onClick={() =>
+              setForm({
+                headline: "",
+                source: "",
+                author: "",
+                publishedAt: "",
+                text: "",
+                save: true,
+              })
+            }
+          >
+            Reset
+          </button>
+        </div>
       </form>
 
-      {state.result ? (
+      {state.loading ? (
+        <section className="panel result-card result-card--placeholder">
+          <div className="result-card__header">
+            <div>
+              <span className="eyebrow">Processing</span>
+              <h2>Generating credibility intelligence</h2>
+            </div>
+            <Sparkles size={18} />
+          </div>
+          <div className="result-card__body">
+            <SkeletonBlock className="skeleton-title" />
+            <SkeletonBlock className="skeleton-line" />
+            <SkeletonBlock className="skeleton-line skeleton-line--short" />
+            <div className="result-card__section-grid">
+              <SkeletonBlock className="skeleton-card skeleton-card--result" />
+              <SkeletonBlock className="skeleton-card skeleton-card--result" />
+            </div>
+            <SkeletonBlock className="skeleton-panel" />
+          </div>
+        </section>
+      ) : state.result ? (
         <AnalysisResultCard analysis={state.result} />
       ) : (
-        <div className="panel empty-state">Submit an article to see the prediction, confidence, explanation, and advanced NLP metadata.</div>
+        <div className="panel empty-state">
+          Submit an article to see the prediction, confidence, explanation, evidence verification, and advanced NLP intelligence.
+        </div>
       )}
     </div>
   );

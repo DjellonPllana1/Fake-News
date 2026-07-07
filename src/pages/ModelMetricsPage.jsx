@@ -1,5 +1,7 @@
 import { useEffect, useState } from "react";
 import { api } from "../api";
+import { useNotifications } from "../components/Notifications";
+import { TableSkeleton } from "../components/Skeleton";
 
 function ConfusionMatrix({ model }) {
   if (!model?.confusion_matrix_named) {
@@ -39,6 +41,7 @@ export function ModelMetricsPage({ refreshToken, onModelsUpdated, session }) {
     error: "",
     data: null,
   });
+  const { notify } = useNotifications();
 
   useEffect(() => {
     let isActive = true;
@@ -77,6 +80,11 @@ export function ModelMetricsPage({ refreshToken, onModelsUpdated, session }) {
   async function handleRetrain() {
     if (session?.user?.role !== "Admin") {
       setState((current) => ({ ...current, error: "Only admin users can retrain models." }));
+      notify({
+        tone: "warning",
+        title: "Restricted action",
+        message: "Only admin users can retrain models.",
+      });
       return;
     }
 
@@ -93,13 +101,35 @@ export function ModelMetricsPage({ refreshToken, onModelsUpdated, session }) {
         error: "",
         data,
       }));
+      notify({
+        tone: "success",
+        title: "Models retrained",
+        message: "Updated metrics and the best-model artifact are now loaded in the dashboard.",
+      });
     } catch (error) {
       setState((current) => ({ ...current, retraining: false, error: error.message }));
+      notify({
+        tone: "error",
+        title: "Retraining failed",
+        message: error.message,
+      });
     }
   }
 
   if (state.loading) {
-    return <div className="panel empty-state">Loading model metrics...</div>;
+    return (
+      <div className="page-grid">
+        <section className="panel hero-panel">
+          <TableSkeleton rows={4} />
+        </section>
+        <section className="panel">
+          <TableSkeleton rows={6} />
+        </section>
+        <section className="panel">
+          <TableSkeleton rows={5} />
+        </section>
+      </div>
+    );
   }
 
   if (state.error) {

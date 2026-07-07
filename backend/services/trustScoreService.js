@@ -318,7 +318,9 @@ export function buildTrustScore({
     evidence,
   });
   const modelRealProbability = clampUnit(
-    prediction.modelProbabilities?.REAL ??
+    prediction.binaryProbabilities?.REAL ??
+      intelligence.binaryModelProbabilities?.REAL ??
+      prediction.modelProbabilities?.REAL ??
       intelligence.modelProbabilities?.REAL ??
       (prediction.label === "REAL" ? prediction.confidenceScore || 0.5 : 0.5)
   );

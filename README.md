@@ -56,6 +56,11 @@ Verity Lens is a production-style AI fake news detection platform built with Rea
   - reliability
   - fact-checking history
 - TF-IDF pipeline with lowercase normalization, URL removal, punctuation cleanup, stopword removal, and stemming
+- Professional dataset pipeline with raw, processed, model, and metrics directories under `ml/`
+- Multi-dataset hybrid training support for:
+  - Kaggle Fake and Real News Dataset
+  - LIAR Dataset
+  - FEVER-style claim verification data
 - Model training and comparison across:
   - Multinomial Naive Bayes
   - Logistic Regression
@@ -162,7 +167,42 @@ pip install -r requirements.txt
 
 If you want to force a specific interpreter, set `PYTHON_BIN` in `.env`.
 
-### 4. Train the models
+### 4. Add datasets
+
+Verity Lens does not auto-download external datasets. Place the raw files in these exact locations:
+
+- `ml/datasets/raw/kaggle/Fake.csv`
+- `ml/datasets/raw/kaggle/True.csv`
+- `ml/datasets/raw/liar/train.tsv`
+- `ml/datasets/raw/liar/valid.tsv`
+- `ml/datasets/raw/liar/test.tsv`
+- `ml/datasets/raw/fever/fever-train.jsonl`
+- `ml/datasets/raw/fever/fever-dev.jsonl`
+
+Recommended download locations:
+
+- Kaggle Fake and Real News Dataset:
+  [Kaggle Fake and Real News Dataset](https://www.kaggle.com/datasets/clmentbisaillon/fake-and-real-news-dataset)
+- LIAR Dataset:
+  [LIAR Dataset](https://www.cs.ucsb.edu/~william/data/liar_dataset.zip)
+- FEVER Dataset:
+  [FEVER Dataset](https://fever.ai/dataset/fever.html)
+
+### 5. Normalize and merge datasets
+
+```bash
+npm run merge:datasets
+```
+
+This step:
+
+- loads every available supported dataset
+- normalizes rows into `text,title,label,source,dataset_type`
+- validates required columns, empty text, duplicates, label balance, dataset size, and language hints
+- writes `ml/metrics/dataset_report.json`
+- writes `ml/datasets/processed/final_dataset.csv`
+
+### 6. Train the models
 
 ```bash
 npm run train:models
@@ -170,11 +210,20 @@ npm run train:models
 
 Generated artifacts:
 
+- `ml/models/best_model.pkl`
+- `ml/models/vectorizer.pkl`
+- `ml/models/label_mapping.json`
+- `ml/models/model_card.json`
+- `ml/metrics/metrics.json`
+- `ml/metrics/dataset_report.json`
+
+Compatibility copies are also written to:
+
 - `backend/models/best_model.joblib`
 - `backend/models/model_metrics.json`
 - `backend/models/training_report.json`
 
-### 5. Start the platform
+### 7. Start the platform
 
 ```bash
 npm run dev
@@ -209,6 +258,7 @@ See [DEPLOYMENT.md](./DEPLOYMENT.md) for the full deployment guide.
 - `npm run lint`
 - `npm run seed`
 - `npm run seed:mysql`
+- `npm run merge:datasets`
 - `npm run train:models`
 - `npm run evaluate:models`
 - `npm run train:nb`
@@ -218,6 +268,12 @@ See [DEPLOYMENT.md](./DEPLOYMENT.md) for the full deployment guide.
 - `npm run docker:logs`
 
 ## Training and Evaluation
+
+### Merge and validate datasets
+
+```bash
+npm run merge:datasets
+```
 
 ### Train and save the best model
 
@@ -229,6 +285,14 @@ npm run train:models
 
 ```bash
 npm run evaluate:models
+```
+
+### Test prediction from the command line
+
+PowerShell example:
+
+```powershell
+'{"headline":"Breaking report","text":"Officials confirmed a new policy update after a public briefing.","confidence_threshold":0.72}' | node ml/run-python.js ml/predict.py
 ```
 
 ### Legacy compatibility alias

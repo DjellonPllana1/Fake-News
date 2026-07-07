@@ -1067,24 +1067,36 @@ export function analyzeArticleIntelligence({
   });
   const emotion = detectEmotions(text);
   const rawRealProbability = clampConfidence(
-    mlResult.modelProbabilities?.REAL ??
+    mlResult.binaryProbabilities?.REAL ??
+      mlResult.modelProbabilities?.REAL ??
       mlResult.probabilities?.REAL ??
       (mlResult.predictedLabel === "REAL" || mlResult.label === "REAL" ? mlResult.confidenceScore || 0.5 : 0.5)
   );
   const rawFakeProbability = clampConfidence(
-    mlResult.modelProbabilities?.FAKE ??
+    mlResult.binaryProbabilities?.FAKE ??
+      mlResult.modelProbabilities?.FAKE ??
       mlResult.probabilities?.FAKE ??
       (mlResult.predictedLabel === "FAKE" || mlResult.label === "FAKE" ? mlResult.confidenceScore || 0.5 : 0.5)
   );
+  const rawUncertainProbability = clampConfidence(
+    mlResult.modelProbabilities?.UNCERTAIN ??
+      mlResult.probabilities?.UNCERTAIN ??
+      (mlResult.predictedLabel === "UNCERTAIN" || mlResult.label === "UNCERTAIN" ? mlResult.confidenceScore || 0.5 : 0)
+  );
   const probabilityTotal = rawRealProbability + rawFakeProbability || 1;
-  const modelProbabilities = {
+  const binaryModelProbabilities = {
     REAL: Number((rawRealProbability / probabilityTotal).toFixed(4)),
     FAKE: Number((rawFakeProbability / probabilityTotal).toFixed(4)),
+  };
+  const modelProbabilities = {
+    REAL: Number(rawRealProbability.toFixed(4)),
+    FAKE: Number(rawFakeProbability.toFixed(4)),
+    UNCERTAIN: Number(rawUncertainProbability.toFixed(4)),
   };
   const thresholdValue = Number(mlResult.threshold || process.env.CONFIDENCE_THRESHOLD || 0.72);
   const threshold = Number.isFinite(thresholdValue) ? thresholdValue : 0.72;
   const probabilityBuild = buildProbabilityDistribution({
-    mlFakeProbability: modelProbabilities.FAKE,
+    mlFakeProbability: binaryModelProbabilities.FAKE,
     ruleRiskScore: ruleEvaluation.score,
     threshold,
     suspiciousSentenceCount: suspiciousSentences.length,
@@ -1130,7 +1142,7 @@ export function analyzeArticleIntelligence({
       modelName: mlResult.model,
       modelVersion: mlResult.modelVersion,
       credibilityScore,
-      mlFakeProbability: modelProbabilities.FAKE,
+      mlFakeProbability: binaryModelProbabilities.FAKE,
       ruleRiskScore: ruleEvaluation.score,
       topInfluentialKeywords,
       ruleFindings: ruleEvaluation.findings,
@@ -1152,11 +1164,12 @@ export function analyzeArticleIntelligence({
     ruleFindings: ruleEvaluation.findings,
     credibility: {
       score: credibilityScore,
-      mlFakeProbability: Number(modelProbabilities.FAKE.toFixed(4)),
+      mlFakeProbability: Number(binaryModelProbabilities.FAKE.toFixed(4)),
       ruleRiskScore: Number(ruleEvaluation.score.toFixed(4)),
       mlWeight: probabilityBuild.mlWeight,
       ruleWeight: probabilityBuild.ruleWeight,
     },
+    binaryModelProbabilities,
     articleStats: {
       wordCount: countWords(text),
       sentenceCount: splitSentences(text).length,
