@@ -992,6 +992,65 @@ h3 {
   gap: 1rem;
 }
 
+.admin-grid > .admin-hero {
+  grid-column: 1 / -1;
+}
+
+.admin-hero {
+  display: grid;
+  gap: 1rem;
+  background:
+    radial-gradient(circle at top left, rgba(109, 211, 199, 0.14), transparent 34%),
+    radial-gradient(circle at top right, rgba(255, 123, 114, 0.1), transparent 28%),
+    linear-gradient(180deg, rgba(7, 18, 24, 0.94), rgba(10, 22, 29, 0.9));
+}
+
+.admin-panel {
+  grid-column: span 4;
+  min-height: 320px;
+}
+
+.admin-panel--wide {
+  grid-column: span 8;
+}
+
+.admin-summary-card {
+  padding: 1rem;
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid var(--border);
+  display: grid;
+  gap: 0.35rem;
+}
+
+.admin-summary-card span,
+.admin-summary-card small {
+  color: var(--text-muted);
+}
+
+.admin-summary-card strong {
+  font-size: 1.3rem;
+}
+
+.admin-config-form,
+.admin-log-list,
+.admin-log-item {
+  display: grid;
+  gap: 0.8rem;
+}
+
+.admin-log-item {
+  padding: 1rem;
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--border);
+}
+
+.admin-log-item span,
+.admin-log-item small {
+  color: var(--text-muted);
+}
+
 .dashboard-grid > .dashboard-hero,
 .dashboard-grid > .dashboard-stats-grid {
   grid-column: 1 / -1;
@@ -1281,6 +1340,8 @@ h3 {
   }
 
   .dashboard-hero,
+  .admin-panel,
+  .admin-panel--wide,
   .dashboard-panel,
   .dashboard-panel--wide {
     grid-column: 1 / -1;

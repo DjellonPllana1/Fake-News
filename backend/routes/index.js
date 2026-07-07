@@ -1,4 +1,5 @@
 import { Router } from "express";
+import adminRoutes from "./adminRoutes.js";
 import authRoutes from "./authRoutes.js";
 import analysisRoutes from "./analysisRoutes.js";
 import dashboardRoutes from "./dashboardRoutes.js";
@@ -14,5 +15,6 @@ router.use(dashboardRoutes);
 router.use(exportRoutes);
 router.use(modelRoutes);
 router.use(systemRoutes);
+router.use(adminRoutes);
 
 export default router;

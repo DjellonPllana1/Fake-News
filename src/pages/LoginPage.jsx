@@ -78,6 +78,7 @@ export function LoginPage({ onLogin }) {
             <span className="eyebrow">Demo Credentials</span>
             <strong>{DEMO_CREDENTIALS.email}</strong>
             <p>Password: {DEMO_CREDENTIALS.password}</p>
+            <p>Role: Admin</p>
           </div>
         </form>
       </section>

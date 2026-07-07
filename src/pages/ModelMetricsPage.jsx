@@ -32,7 +32,7 @@ function ConfusionMatrix({ model }) {
   );
 }
 
-export function ModelMetricsPage({ refreshToken, onModelsUpdated }) {
+export function ModelMetricsPage({ refreshToken, onModelsUpdated, session }) {
   const [state, setState] = useState({
     loading: true,
     retraining: false,
@@ -75,6 +75,11 @@ export function ModelMetricsPage({ refreshToken, onModelsUpdated }) {
   }, [refreshToken]);
 
   async function handleRetrain() {
+    if (session?.user?.role !== "Admin") {
+      setState((current) => ({ ...current, error: "Only admin users can retrain models." }));
+      return;
+    }
+
     setState((current) => ({ ...current, retraining: true, error: "" }));
 
     try {
@@ -108,9 +113,11 @@ export function ModelMetricsPage({ refreshToken, onModelsUpdated }) {
       <section className="panel empty-state">
         <h2>No trained model metrics found</h2>
         <p>{data?.message || "Run the training command to generate model comparison artifacts."}</p>
-        <button type="button" className="primary-button" onClick={handleRetrain} disabled={state.retraining}>
-          {state.retraining ? "Training..." : "Train Models"}
-        </button>
+        {session?.user?.role === "Admin" ? (
+          <button type="button" className="primary-button" onClick={handleRetrain} disabled={state.retraining}>
+            {state.retraining ? "Training..." : "Train Models"}
+          </button>
+        ) : null}
       </section>
     );
   }
@@ -128,9 +135,11 @@ export function ModelMetricsPage({ refreshToken, onModelsUpdated }) {
             </p>
           </div>
 
-          <button type="button" className="primary-button" onClick={handleRetrain} disabled={state.retraining}>
-            {state.retraining ? "Training..." : "Retrain Models"}
-          </button>
+          {session?.user?.role === "Admin" ? (
+            <button type="button" className="primary-button" onClick={handleRetrain} disabled={state.retraining}>
+              {state.retraining ? "Training..." : "Retrain Models"}
+            </button>
+          ) : null}
         </div>
 
         <div className="metric-strip">

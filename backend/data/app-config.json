@@ -1,0 +1,12 @@
+{
+  "dashboardRefreshSeconds": 30,
+  "historyPageSize": 100,
+  "adminPageSize": 25,
+  "apiLogViewLimit": 100,
+  "allowDatasetDeletion": true,
+  "allowAnalysisDeletion": true,
+  "allowModelRetrain": true,
+  "allowUserRoleEditing": true,
+  "maintenanceMode": false,
+  "adminBanner": ""
+}

@@ -421,6 +421,105 @@ export async function saveAnalysis(item, notification) {
   return analysis;
 }
 
+export async function updateUserByEmail(email, updates = {}) {
+  const normalizedEmail = String(email || "").trim().toLowerCase();
+
+  if (!normalizedEmail) {
+    return null;
+  }
+
+  if (!useMysql) {
+    const database = await readDatabase();
+    const index = database.users.findIndex((user) => user.email.toLowerCase() === normalizedEmail);
+
+    if (index === -1) {
+      return null;
+    }
+
+    const current = database.users[index];
+    const next = normalizeUser({
+      ...current,
+      ...updates,
+      email: current.email,
+      passwordHash: current.passwordHash,
+    });
+
+    database.users[index] = next;
+    await writeDatabase(database);
+    return normalizeUser(next);
+  }
+
+  const db = getPool();
+  const [rows] = await db.query("SELECT name, email, role, status, password_hash FROM users WHERE LOWER(email) = ? LIMIT 1", [normalizedEmail]);
+  const existing = Array.isArray(rows) ? rows[0] : null;
+
+  if (!existing) {
+    return null;
+  }
+
+  const next = normalizeUser({
+    name: updates.name ?? existing.name,
+    email: existing.email,
+    role: updates.role ?? existing.role,
+    status: updates.status ?? existing.status,
+    passwordHash: existing.password_hash,
+  });
+
+  await db.execute("UPDATE users SET name = ?, role = ?, status = ? WHERE email = ?", [next.name, next.role, next.status, next.email]);
+  return next;
+}
+
+export async function deleteAnalysisById(analysisId) {
+  const normalizedId = String(analysisId || "").trim();
+
+  if (!normalizedId) {
+    return false;
+  }
+
+  if (!useMysql) {
+    const database = await readDatabase();
+    const nextAnalyses = database.analyses.filter((item) => item.id !== normalizedId);
+
+    if (nextAnalyses.length === database.analyses.length) {
+      return false;
+    }
+
+    database.analyses = nextAnalyses;
+    database.meta.lastAnalysisAt = nextAnalyses[0]?.date || null;
+    await writeDatabase(database);
+    return true;
+  }
+
+  const db = getPool();
+  const [result] = await db.execute("DELETE FROM analyses WHERE id = ?", [normalizedId]);
+  return Boolean(result?.affectedRows);
+}
+
+export async function deleteArticleById(articleId) {
+  const normalizedId = String(articleId || "").trim();
+
+  if (!normalizedId) {
+    return false;
+  }
+
+  if (!useMysql) {
+    const database = await readDatabase();
+    const nextArticles = database.articles.filter((item) => item.id !== normalizedId);
+
+    if (nextArticles.length === database.articles.length) {
+      return false;
+    }
+
+    database.articles = nextArticles;
+    await writeDatabase(database);
+    return true;
+  }
+
+  const db = getPool();
+  const [result] = await db.execute("DELETE FROM articles WHERE id = ?", [normalizedId]);
+  return Boolean(result?.affectedRows);
+}
+
 export async function findUserByEmail(email) {
   const normalizedEmail = String(email || "").trim().toLowerCase();
 

@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Activity, BarChart3, Globe, HelpCircle, History, LayoutDashboard, LogOut, ScanSearch, ShieldCheck } from "lucide-react";
+import { Activity, BarChart3, Globe, HelpCircle, History, LayoutDashboard, LockKeyhole, LogOut, ScanSearch, ShieldCheck } from "lucide-react";
 import { NAVIGATION_ORDER, ROUTES } from "../constants";
 
 const iconMap = {
@@ -8,6 +8,7 @@ const iconMap = {
   "url-analyzer": Globe,
   history: History,
   "model-metrics": BarChart3,
+  admin: LockKeyhole,
   "system-diagnostics": ShieldCheck,
   about: HelpCircle,
 };
@@ -32,6 +33,11 @@ export function AppShell({ route, session, onNavigate, onLogout, children }) {
         <nav className="sidebar__nav">
           {NAVIGATION_ORDER.map((key) => {
             const item = ROUTES[key];
+
+            if (item.roles?.length && !item.roles.includes(session.user.role)) {
+              return null;
+            }
+
             const Icon = iconMap[key];
             const isActive = route === key;
 

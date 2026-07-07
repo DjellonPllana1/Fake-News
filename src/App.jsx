@@ -6,6 +6,7 @@ import { AnalyzePage } from "./pages/AnalyzePage";
 import { DashboardPage } from "./pages/DashboardPage";
 import { HistoryPage } from "./pages/HistoryPage";
 import { LoginPage } from "./pages/LoginPage";
+import { AdminDashboardPage } from "./pages/AdminDashboardPage";
 import { ModelMetricsPage } from "./pages/ModelMetricsPage";
 import { SystemDiagnosticsPage } from "./pages/SystemDiagnosticsPage";
 import { UrlAnalyzerPage } from "./pages/UrlAnalyzerPage";
@@ -26,14 +27,24 @@ function loadSession() {
   }
 }
 
+function canAccessRoute(route, session) {
+  const routeMeta = ROUTES[route] || ROUTES.dashboard;
+  return !routeMeta.roles?.length || routeMeta.roles.includes(session?.user?.role);
+}
+
 export default function App() {
   const [session, setSession] = useState(() => loadSession());
-  const [route, setRoute] = useState(() => (loadSession() ? getRouteFromHash() : "login"));
+  const [route, setRoute] = useState(() => {
+    const currentSession = loadSession();
+    const initialRoute = currentSession ? getRouteFromHash() : "login";
+    return currentSession && !canAccessRoute(initialRoute, currentSession) ? "dashboard" : initialRoute;
+  });
   const [refreshToken, setRefreshToken] = useState(0);
 
   useEffect(() => {
     function handleHashChange() {
-      const nextRoute = session ? getRouteFromHash() : "login";
+      const candidateRoute = session ? getRouteFromHash() : "login";
+      const nextRoute = session && !canAccessRoute(candidateRoute, session) ? "dashboard" : candidateRoute;
       startTransition(() => {
         setRoute(nextRoute);
       });
@@ -72,6 +83,10 @@ export default function App() {
   }
 
   function handleNavigate(nextRoute) {
+    if (!canAccessRoute(nextRoute, session)) {
+      nextRoute = "dashboard";
+    }
+
     startTransition(() => {
       setRoute(nextRoute);
     });
@@ -95,7 +110,9 @@ export default function App() {
   } else if (route === "history") {
     page = <HistoryPage refreshToken={refreshToken} />;
   } else if (route === "model-metrics") {
-    page = <ModelMetricsPage refreshToken={refreshToken} onModelsUpdated={triggerRefresh} />;
+    page = <ModelMetricsPage refreshToken={refreshToken} onModelsUpdated={triggerRefresh} session={session} />;
+  } else if (route === "admin") {
+    page = <AdminDashboardPage />;
   } else if (route === "system-diagnostics") {
     page = <SystemDiagnosticsPage />;
   } else if (route === "about") {
