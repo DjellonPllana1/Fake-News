@@ -47,6 +47,10 @@ DATASET_EXPECTATIONS = {
             RAW_DATASET_DIR / "kaggle" / "Fake.csv",
             RAW_DATASET_DIR / "kaggle" / "True.csv",
         ],
+        "fallback_files": [
+            RAW_DATASET_DIR / "Fake.csv",
+            RAW_DATASET_DIR / "True.csv",
+        ],
         "processed_file": PROCESSED_DATASET_DIR / "kaggle_fake_real.csv",
     },
     "liar": {
@@ -416,13 +420,18 @@ def summarize_dataset(
 
 def build_missing_dataset_report(dataset_name: str) -> dict[str, object]:
     spec = DATASET_EXPECTATIONS[dataset_name]
+    expected_files = [relative_to_root(path) for path in spec["files"]]
+
+    if spec.get("fallback_files"):
+        expected_files.extend(relative_to_root(path) for path in spec["fallback_files"])
+
     return {
         "dataset_name": dataset_name,
         "dataset_type": dataset_name,
         "status": "missing",
         "description": spec["description"],
         "source_url": spec["source_url"],
-        "expected_files": [relative_to_root(path) for path in spec["files"]],
+        "expected_files": expected_files,
         "processed_file": relative_to_root(spec["processed_file"]),
         "warnings": ["Dataset files were not found, so this dataset was skipped."],
     }

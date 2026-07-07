@@ -1,7 +1,33 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Radar } from "recharts";
+import { BrainCircuit, RotateCcw, ShieldCheck, Sparkles } from "lucide-react";
 import { api } from "../api";
+import { SectionHeader } from "../components/SectionHeader";
 import { useNotifications } from "../components/Notifications";
 import { TableSkeleton } from "../components/Skeleton";
+import { Badge } from "../components/ui/badge";
+import { Button } from "../components/ui/button";
+import { Card, CardContent } from "../components/ui/card";
+import { EmptyState } from "../components/ui/empty-state";
+
+const chartColors = {
+  accuracy: "#93c5fd",
+  precision: "#68d5ff",
+  recall: "#ffc266",
+  f1: "#ff6f8d",
+  grid: "rgba(148, 163, 184, 0.16)",
+  axis: "#94a7bd",
+};
+
+function MetricCard({ label, value, detail }) {
+  return (
+    <article className="metric-tile">
+      <span className="text-sm text-[var(--muted-foreground)]">{label}</span>
+      <strong>{value}</strong>
+      <p className="text-sm leading-6">{detail}</p>
+    </article>
+  );
+}
 
 function ConfusionMatrix({ model }) {
   if (!model?.confusion_matrix_named) {
@@ -11,26 +37,49 @@ function ConfusionMatrix({ model }) {
   const labels = model.labels || Object.keys(model.confusion_matrix_named);
 
   return (
-    <div className="matrix-card">
-      <strong>{model.name}</strong>
-      <div className="matrix-grid">
-        <div className="matrix-grid__row matrix-grid__row--header">
-          <span>Actual / Predicted</span>
-          {labels.map((label) => (
-            <span key={`${model.id}-${label}`}>{label}</span>
-          ))}
+    <article className="rounded-[28px] border border-[var(--border-subtle)] bg-[var(--panel-soft)] p-5">
+      <div className="mb-4 flex items-center justify-between gap-3">
+        <div>
+          <strong className="block text-base font-semibold text-[var(--foreground)]">{model.name}</strong>
+          <p className="mt-1 text-sm text-[var(--muted-foreground)]">Actual vs predicted outcomes for the latest evaluation run.</p>
         </div>
+        <Badge variant={model.id === "best" ? "real" : "neutral"}>{Math.round(Number(model.f1 || 0) * 100)}% F1</Badge>
+      </div>
 
-        {labels.map((actualLabel) => (
-          <div key={`${model.id}-${actualLabel}`} className="matrix-grid__row">
-            <span>{actualLabel}</span>
-            {labels.map((predictedLabel) => (
-              <span key={`${model.id}-${actualLabel}-${predictedLabel}`}>{model.confusion_matrix_named[actualLabel]?.[predictedLabel] ?? 0}</span>
+      <div className="overflow-auto">
+        <div className="grid min-w-[420px] gap-2">
+          <div className="grid grid-cols-[1.5fr_repeat(3,minmax(0,1fr))] gap-2">
+            <span className="rounded-2xl border border-[var(--border-subtle)] bg-[var(--panel)] px-3 py-2 text-xs font-semibold uppercase tracking-[0.14em] text-[var(--muted-foreground)]">
+              Actual / Predicted
+            </span>
+            {labels.map((label) => (
+              <span
+                key={`${model.id}-${label}`}
+                className="rounded-2xl border border-[var(--border-subtle)] bg-[var(--panel)] px-3 py-2 text-center text-xs font-semibold uppercase tracking-[0.14em] text-[var(--muted-foreground)]"
+              >
+                {label}
+              </span>
             ))}
           </div>
-        ))}
+
+          {labels.map((actualLabel) => (
+            <div key={`${model.id}-${actualLabel}`} className="grid grid-cols-[1.5fr_repeat(3,minmax(0,1fr))] gap-2">
+              <span className="rounded-2xl border border-[var(--border-subtle)] bg-[var(--panel)] px-3 py-3 text-sm font-medium text-[var(--foreground)]">
+                {actualLabel}
+              </span>
+              {labels.map((predictedLabel) => (
+                <span
+                  key={`${model.id}-${actualLabel}-${predictedLabel}`}
+                  className="rounded-2xl border border-[var(--border-subtle)] bg-[var(--panel)] px-3 py-3 text-center text-sm font-semibold text-[var(--foreground)]"
+                >
+                  {model.confusion_matrix_named[actualLabel]?.[predictedLabel] ?? 0}
+                </span>
+              ))}
+            </div>
+          ))}
+        </div>
       </div>
-    </div>
+    </article>
   );
 }
 
@@ -116,158 +165,231 @@ export function ModelMetricsPage({ refreshToken, onModelsUpdated, session }) {
     }
   }
 
+  const comparisonData = useMemo(() => {
+    if (!state.data?.models?.length) {
+      return [];
+    }
+
+    return state.data.models.map((model) => ({
+      name: model.name,
+      accuracy: Math.round(Number(model.accuracy || 0) * 100),
+      precision: Math.round(Number(model.precision || 0) * 100),
+      recall: Math.round(Number(model.recall || 0) * 100),
+      f1: Math.round(Number(model.f1 || 0) * 100),
+    }));
+  }, [state.data]);
+
   if (state.loading) {
     return (
       <div className="page-grid">
-        <section className="panel hero-panel">
-          <TableSkeleton rows={4} />
-        </section>
-        <section className="panel">
-          <TableSkeleton rows={6} />
-        </section>
-        <section className="panel">
-          <TableSkeleton rows={5} />
-        </section>
+        <Card>
+          <CardContent className="space-y-6">
+            <TableSkeleton rows={5} />
+          </CardContent>
+        </Card>
+        <div className="two-column-grid">
+          <Card>
+            <CardContent className="space-y-6">
+              <TableSkeleton rows={6} />
+            </CardContent>
+          </Card>
+          <Card>
+            <CardContent className="space-y-6">
+              <TableSkeleton rows={6} />
+            </CardContent>
+          </Card>
+        </div>
       </div>
     );
   }
 
-  if (state.error) {
-    return <div className="panel empty-state">{state.error}</div>;
+  if (state.error && !state.data) {
+    return <EmptyState icon={BrainCircuit} title="Unable to load model metrics" description={state.error} />;
   }
 
   const data = state.data;
 
   if (!data?.models?.length) {
     return (
-      <section className="panel empty-state">
-        <h2>No trained model metrics found</h2>
-        <p>{data?.message || "Run the training command to generate model comparison artifacts."}</p>
+      <EmptyState
+        icon={Sparkles}
+        title="No trained model metrics found"
+        description={data?.message || "Run the training command to generate model comparison artifacts."}
+      >
         {session?.user?.role === "Admin" ? (
-          <button type="button" className="primary-button" onClick={handleRetrain} disabled={state.retraining}>
+          <Button type="button" onClick={handleRetrain} disabled={state.retraining}>
             {state.retraining ? "Training..." : "Train Models"}
-          </button>
+          </Button>
         ) : null}
-      </section>
+      </EmptyState>
     );
   }
 
   return (
     <div className="page-grid">
-      <section className="panel hero-panel">
-        <div className="panel__header panel__header--split">
-          <div>
-            <span className="eyebrow">Best Model</span>
-            <h2>{data.best_model.name}</h2>
-            <p>
-              Generated {data.generated_at}
-              {data.model_version ? ` | Version ${data.model_version}` : ""}
-            </p>
-          </div>
+      <Card>
+        <CardContent className="space-y-8">
+          <SectionHeader
+            eyebrow="Best Model"
+            title={data.best_model.name}
+            description={`Generated ${data.generated_at}${data.model_version ? ` | Version ${data.model_version}` : ""}`}
+            actions={
+              session?.user?.role === "Admin" ? (
+                <Button type="button" onClick={handleRetrain} disabled={state.retraining}>
+                  <RotateCcw className="h-4 w-4" />
+                  {state.retraining ? "Training..." : "Retrain Models"}
+                </Button>
+              ) : null
+            }
+          />
 
-          {session?.user?.role === "Admin" ? (
-            <button type="button" className="primary-button" onClick={handleRetrain} disabled={state.retraining}>
-              {state.retraining ? "Training..." : "Retrain Models"}
-            </button>
-          ) : null}
-        </div>
+          {state.error ? <div className="callout callout-danger">{state.error}</div> : null}
 
-        <div className="metric-strip">
-          <div>
-            <span>Accuracy</span>
-            <strong>{Math.round(data.best_model.accuracy * 100)}%</strong>
+          <div className="four-column-grid">
+            <MetricCard label="Accuracy" value={`${Math.round(data.best_model.accuracy * 100)}%`} detail="Overall correctness on the evaluation split." />
+            <MetricCard label="Precision" value={`${Math.round(data.best_model.precision * 100)}%`} detail="How often positive predictions were actually correct." />
+            <MetricCard label="Recall" value={`${Math.round(data.best_model.recall * 100)}%`} detail="How much of the target class signal the model captured." />
+            <MetricCard label="F1 Score" value={`${Math.round(data.best_model.f1 * 100)}%`} detail="Balanced score used for best-model selection." />
           </div>
-          <div>
-            <span>Precision</span>
-            <strong>{Math.round(data.best_model.precision * 100)}%</strong>
-          </div>
-          <div>
-            <span>Recall</span>
-            <strong>{Math.round(data.best_model.recall * 100)}%</strong>
-          </div>
-          <div>
-            <span>F1 Score</span>
-            <strong>{Math.round(data.best_model.f1 * 100)}%</strong>
-          </div>
-        </div>
-      </section>
+        </CardContent>
+      </Card>
 
-      <section className="panel">
-        <div className="panel__header">
-          <div>
-            <span className="eyebrow">Model Comparison</span>
-            <h2>Benchmark Table</h2>
-          </div>
-        </div>
-        <div className="table-wrapper">
-          <table className="metrics-table">
-            <thead>
-              <tr>
-                <th>Model</th>
-                <th>Accuracy</th>
-                <th>Precision</th>
-                <th>Recall</th>
-                <th>F1</th>
-              </tr>
-            </thead>
-            <tbody>
-              {data.models.map((model) => (
-                <tr key={model.id}>
-                  <td>{model.name}</td>
-                  <td>{Math.round(model.accuracy * 100)}%</td>
-                  <td>{Math.round(model.precision * 100)}%</td>
-                  <td>{Math.round(model.recall * 100)}%</td>
-                  <td>{Math.round(model.f1 * 100)}%</td>
+      <div className="two-column-grid">
+        <Card>
+          <CardContent className="space-y-6">
+            <SectionHeader eyebrow="Model Comparison" title="Benchmark chart" description="Accuracy, precision, recall, and F1 across all trained models." />
+            <div className="chart-shell chart-shell--tall">
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={comparisonData}>
+                  <CartesianGrid strokeDasharray="3 3" stroke={chartColors.grid} />
+                  <XAxis dataKey="name" stroke={chartColors.axis} />
+                  <YAxis stroke={chartColors.axis} domain={[0, 100]} />
+                  <Tooltip />
+                  <Legend />
+                  <Bar dataKey="accuracy" fill={chartColors.accuracy} radius={[6, 6, 0, 0]} />
+                  <Bar dataKey="precision" fill={chartColors.precision} radius={[6, 6, 0, 0]} />
+                  <Bar dataKey="recall" fill={chartColors.recall} radius={[6, 6, 0, 0]} />
+                  <Bar dataKey="f1" fill={chartColors.f1} radius={[6, 6, 0, 0]} />
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardContent className="space-y-6">
+            <SectionHeader eyebrow="Performance Shape" title="Metric radar" description="At-a-glance shape of each model's strengths and tradeoffs." />
+            <div className="chart-shell chart-shell--tall">
+              <ResponsiveContainer width="100%" height="100%">
+                <RadarChart data={comparisonData}>
+                  <PolarGrid stroke={chartColors.grid} />
+                  <PolarAngleAxis dataKey="name" tick={{ fill: chartColors.axis, fontSize: 12 }} />
+                  <PolarRadiusAxis tick={{ fill: chartColors.axis, fontSize: 11 }} domain={[0, 100]} />
+                  <Radar name="Accuracy" dataKey="accuracy" stroke={chartColors.accuracy} fill={chartColors.accuracy} fillOpacity={0.15} />
+                  <Radar name="F1" dataKey="f1" stroke={chartColors.f1} fill={chartColors.f1} fillOpacity={0.12} />
+                  <Tooltip />
+                  <Legend />
+                </RadarChart>
+              </ResponsiveContainer>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      <Card>
+        <CardContent className="space-y-6">
+          <SectionHeader eyebrow="Benchmark Table" title="All trained models" description="Comparable scores for every model evaluated during the latest training run." />
+          <div className="table-wrap">
+            <table className="data-table">
+              <thead>
+                <tr>
+                  <th>Model</th>
+                  <th>Accuracy</th>
+                  <th>Precision</th>
+                  <th>Recall</th>
+                  <th>F1</th>
                 </tr>
+              </thead>
+              <tbody>
+                {data.models.map((model) => (
+                  <tr key={model.id}>
+                    <td>
+                      <div className="flex flex-wrap items-center gap-2">
+                        <span>{model.name}</span>
+                        {model.name === data.best_model.name ? <Badge variant="real">Best</Badge> : null}
+                      </div>
+                    </td>
+                    <td>{Math.round(model.accuracy * 100)}%</td>
+                    <td>{Math.round(model.precision * 100)}%</td>
+                    <td>{Math.round(model.recall * 100)}%</td>
+                    <td>{Math.round(model.f1 * 100)}%</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </CardContent>
+      </Card>
+
+      <div className="two-column-grid">
+        <Card>
+          <CardContent className="space-y-6">
+            <SectionHeader eyebrow="Preprocessing" title="Pipeline settings" description="Current text processing and feature engineering configuration." />
+            <div className="tag-cloud">
+              {Object.entries(data.preprocessing || {}).map(([key, value]) => (
+                <span key={key}>
+                  {key}: {Array.isArray(value) ? value.join(" - ") : String(value)}
+                </span>
               ))}
-            </tbody>
-          </table>
-        </div>
-      </section>
+            </div>
+          </CardContent>
+        </Card>
 
-      <section className="panel">
-        <div className="panel__header">
-          <div>
-            <span className="eyebrow">Preprocessing</span>
-            <h2>Pipeline Settings</h2>
+        <Card>
+          <CardContent className="space-y-6">
+            <SectionHeader eyebrow="Decision Policy" title="Uncertainty threshold" description="Low-confidence articles are explicitly surfaced for human review." />
+            <div className="rounded-[26px] border border-[var(--border-subtle)] bg-[var(--panel-soft)] p-5">
+              <div className="flex flex-wrap items-center gap-2">
+                <Badge variant="uncertain">{data.decision_policy.low_confidence_label}</Badge>
+                <Badge variant="neutral">
+                  Threshold {Math.round(Number(data.decision_policy.confidence_threshold_default || 0) * 100)}%
+                </Badge>
+              </div>
+              <p className="mt-4 text-sm leading-7 text-[var(--muted-foreground)]">
+                If the best model score stays below the configured threshold, the article is marked as UNCERTAIN instead of forcing an overconfident label.
+              </p>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      <Card>
+        <CardContent className="space-y-6">
+          <SectionHeader eyebrow="Confusion Matrices" title="Per-model outcomes" description="Detailed actual vs predicted counts for each evaluated model." />
+          <div className="page-grid">
+            {data.models.map((model) => (
+              <ConfusionMatrix key={model.id} model={model} />
+            ))}
           </div>
-        </div>
+        </CardContent>
+      </Card>
 
-        <div className="tag-list">
-          {Object.entries(data.preprocessing || {}).map(([key, value]) => (
-            <span key={key}>
-              {key}: {Array.isArray(value) ? value.join(" - ") : String(value)}
-            </span>
-          ))}
-        </div>
-      </section>
-
-      <section className="panel">
-        <div className="panel__header">
-          <div>
-            <span className="eyebrow">Decision Policy</span>
-            <h2>Uncertainty Threshold</h2>
+      <Card>
+        <CardContent className="space-y-6">
+          <SectionHeader eyebrow="Model Readiness" title="Current production snapshot" description="Operational context for the currently selected best model artifact." />
+          <div className="three-column-grid">
+            <MetricCard label="Best Model" value={data.best_model.name} detail="Automatically selected from the benchmark run." />
+            <MetricCard label="Model Version" value={data.model_version || "Not available"} detail="Version identifier returned by the latest training pipeline." />
+            <MetricCard label="Policy" value={data.decision_policy.low_confidence_label} detail="Low-confidence fallback label used by the frontend and backend." />
           </div>
-        </div>
-        <p>
-          Low-confidence articles are marked <strong>{data.decision_policy.low_confidence_label}</strong> when the best score stays below{" "}
-          <strong>{Math.round(Number(data.decision_policy.confidence_threshold_default || 0) * 100)}%</strong>.
-        </p>
-      </section>
-
-      <section className="panel">
-        <div className="panel__header">
-          <div>
-            <span className="eyebrow">Confusion Matrices</span>
-            <h2>Per-model outcomes</h2>
+          <div className="flex items-center gap-2">
+            <Badge variant="real">
+              <ShieldCheck className="h-3.5 w-3.5" />
+              Production-ready artifact loaded
+            </Badge>
           </div>
-        </div>
-        <div className="matrix-list">
-          {data.models.map((model) => (
-            <ConfusionMatrix key={model.id} model={model} />
-          ))}
-        </div>
-      </section>
+        </CardContent>
+      </Card>
     </div>
   );
 }

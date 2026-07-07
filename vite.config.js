@@ -1,16 +1,28 @@
-import { defineConfig } from 'vite'
-import react from '@vitejs/plugin-react'
-import { fileURLToPath } from 'node:url'
+import { defineConfig } from "vite";
+import react from "@vitejs/plugin-react";
+import tailwindcss from "@tailwindcss/vite";
+import { fileURLToPath } from "node:url";
 
-const root = fileURLToPath(new URL('.', import.meta.url))
+const root = fileURLToPath(new URL(".", import.meta.url));
+const generatedWatchIgnorePatterns = [
+  "**/backend/database.json",
+  "**/backend/data/app-config.json",
+  "**/backend/models/**",
+  "**/ml/models/**",
+  "**/ml/metrics/**",
+  "**/ml/datasets/processed/**",
+  "**/dist/**",
+  "**/.tmp/**",
+  "**/.tmp-*.log",
+];
 
 // https://vite.dev/config/
 export default defineConfig({
   root,
-  plugins: [react()],
+  plugins: [react(), tailwindcss()],
   build: {
     rollupOptions: {
-      input: fileURLToPath(new URL('index.html', import.meta.url)),
+      input: fileURLToPath(new URL("index.html", import.meta.url)),
     },
   },
   server: {
@@ -21,5 +33,10 @@ export default defineConfig({
         secure: false,
       },
     },
+    // Persisted analysis/model artifacts live inside the repo, so ignore them
+    // during frontend dev to prevent full-page reloads after successful API calls.
+    watch: {
+      ignored: generatedWatchIgnorePatterns,
+    },
   },
-})
+});

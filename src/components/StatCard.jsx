@@ -1,4 +1,6 @@
+import { motion } from "framer-motion";
 import { useEffect, useState } from "react";
+import { cn } from "../lib/utils";
 
 function parseDisplayValue(value) {
   if (typeof value === "number") {
@@ -32,6 +34,16 @@ function formatNumber(value, decimals) {
   }).format(value);
 }
 
+const toneClassMap = {
+  neutral: "text-[var(--foreground)]",
+  real: "text-[var(--success)]",
+  fake: "text-[var(--danger)]",
+  uncertain: "text-[var(--warning)]",
+  medium: "text-[var(--accent-strong)]",
+};
+
+const MotionArticle = motion.article;
+
 export function StatCard({ title, value, hint, tone = "neutral", icon: Icon = null }) {
   const parsed = parseDisplayValue(value);
   const [displayValue, setDisplayValue] = useState(() => {
@@ -50,7 +62,7 @@ export function StatCard({ title, value, hint, tone = "neutral", icon: Icon = nu
     }
 
     let animationFrame = 0;
-    const durationMs = 800;
+    const durationMs = 900;
     const startTime = performance.now();
 
     const animate = (now) => {
@@ -70,17 +82,25 @@ export function StatCard({ title, value, hint, tone = "neutral", icon: Icon = nu
   }, [value]);
 
   return (
-    <article className={`stat-card stat-card--${tone}`}>
-      <div className="stat-card__header">
-        <span className="eyebrow">{title}</span>
+    <MotionArticle
+      whileHover={{ y: -4 }}
+      transition={{ duration: 0.2, ease: "easeOut" }}
+      className="surface-card flex min-h-[168px] flex-col gap-5 p-5"
+    >
+      <div className="flex items-start justify-between gap-3">
+        <div className="space-y-2">
+          <span className="eyebrow">{title}</span>
+          <p className="text-sm leading-7 text-[var(--muted-foreground)]">{hint}</p>
+        </div>
         {Icon ? (
-          <span className="stat-card__icon">
-            <Icon size={16} />
+          <span className={cn("metric-icon shrink-0", toneClassMap[tone] || toneClassMap.neutral)}>
+            <Icon className="h-4 w-4" />
           </span>
         ) : null}
       </div>
-      <strong>{parsed ? displayValue : value}</strong>
-      <p>{hint}</p>
-    </article>
+      <strong className={cn("font-display text-[clamp(2rem,3vw,2.75rem)] font-semibold tracking-[-0.06em]", toneClassMap[tone] || toneClassMap.neutral)}>
+        {parsed ? displayValue : value}
+      </strong>
+    </MotionArticle>
   );
 }

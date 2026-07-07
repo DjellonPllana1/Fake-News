@@ -15,15 +15,31 @@ DATASET_NAME = "kaggle_fake_real"
 DATASET_TYPE = "article"
 
 
-def load_dataset() -> DatasetBundle:
+def resolve_kaggle_files():
     spec = DATASET_EXPECTATIONS[DATASET_NAME]
-    fake_path, real_path = spec["files"]
+    primary_fake_path, primary_real_path = spec["files"]
+    fallback_fake_path, fallback_real_path = spec.get("fallback_files", [])
+    fake_path = primary_fake_path if primary_fake_path.exists() else fallback_fake_path
+    real_path = primary_real_path if primary_real_path.exists() else fallback_real_path
 
     if not fake_path.exists() or not real_path.exists():
-        missing_files = [str(path) for path in spec["files"] if not path.exists()]
+        supported_locations = [
+            primary_fake_path,
+            primary_real_path,
+            fallback_fake_path,
+            fallback_real_path,
+        ]
         raise FileNotFoundError(
-            f"Missing Kaggle Fake and Real News file(s): {', '.join(missing_files)}. Place `Fake.csv` and `True.csv` in ml/datasets/raw/kaggle/."
+            "Missing Kaggle Fake and Real News file(s). Supported locations: "
+            + ", ".join(str(path) for path in supported_locations)
         )
+
+    return fake_path, real_path
+
+
+def load_dataset() -> DatasetBundle:
+    spec = DATASET_EXPECTATIONS[DATASET_NAME]
+    fake_path, real_path = resolve_kaggle_files()
 
     records: list[dict[str, str]] = []
     raw_row_count = 0
@@ -64,7 +80,10 @@ def load_dataset() -> DatasetBundle:
         source_files=[fake_path, real_path],
         records=records,
         raw_row_count=raw_row_count,
-        notes=["Rows are derived from the Kaggle Fake.csv and True.csv article corpora."],
+        notes=[
+            "Rows are derived from the Kaggle Fake.csv and True.csv article corpora.",
+            f"Detected files: {fake_path} and {real_path}.",
+        ],
     )
 
 

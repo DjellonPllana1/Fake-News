@@ -1,6 +1,12 @@
 import { useEffect, useState } from "react";
+import { Activity, Database, HeartPulse, ServerCog } from "lucide-react";
 import { api } from "../api";
+import { InfoList } from "../components/InfoList";
+import { SectionHeader } from "../components/SectionHeader";
 import { TableSkeleton } from "../components/Skeleton";
+import { Badge } from "../components/ui/badge";
+import { Card, CardContent } from "../components/ui/card";
+import { EmptyState } from "../components/ui/empty-state";
 
 function formatValue(value) {
   if (typeof value === "boolean") {
@@ -14,25 +20,31 @@ function formatValue(value) {
   return String(value);
 }
 
-function KeyValueGrid({ title, values }) {
-  return (
-    <section className="panel list-panel">
-      <div className="panel__header">
-        <div>
-          <span className="eyebrow">Diagnostics</span>
-          <h2>{title}</h2>
-        </div>
-      </div>
+function KeyValueSection({ title, eyebrow, values, icon }) {
+  const Icon = icon;
 
-      <div className="stack-list">
-        {Object.entries(values || {}).map(([key, value]) => (
-          <div key={key} className="stack-list__row">
-            <span>{key}</span>
-            <strong>{formatValue(value)}</strong>
-          </div>
-        ))}
-      </div>
-    </section>
+  return (
+    <Card>
+      <CardContent className="space-y-6">
+        <SectionHeader
+          eyebrow={eyebrow}
+          title={title}
+          description="Structured system data returned directly from the diagnostics endpoint."
+          actions={
+            <span className="metric-icon">
+              <Icon className="h-4 w-4" />
+            </span>
+          }
+        />
+
+        <InfoList
+          items={Object.entries(values || {}).map(([key, value]) => ({
+            label: key,
+            value: formatValue(value),
+          }))}
+        />
+      </CardContent>
+    </Card>
   );
 }
 
@@ -70,60 +82,93 @@ export function SystemDiagnosticsPage() {
   if (state.loading) {
     return (
       <div className="page-grid">
-        <section className="panel hero-panel">
-          <TableSkeleton rows={4} />
-        </section>
-        <section className="panel list-panel">
-          <TableSkeleton rows={6} />
-        </section>
-        <section className="panel list-panel">
-          <TableSkeleton rows={6} />
-        </section>
+        <Card>
+          <CardContent className="space-y-6">
+            <TableSkeleton rows={5} />
+          </CardContent>
+        </Card>
+        <div className="two-column-grid">
+          <Card>
+            <CardContent className="space-y-6">
+              <TableSkeleton rows={6} />
+            </CardContent>
+          </Card>
+          <Card>
+            <CardContent className="space-y-6">
+              <TableSkeleton rows={6} />
+            </CardContent>
+          </Card>
+        </div>
       </div>
     );
   }
 
   if (state.error) {
-    return <div className="panel empty-state">{state.error}</div>;
+    return <EmptyState icon={ServerCog} title="Unable to load diagnostics" description={state.error} />;
   }
 
   const data = state.data;
 
   return (
     <div className="page-grid">
-      <section className="panel hero-panel">
-        <div className="panel__header">
-          <div>
-            <span className="eyebrow">System Health</span>
-            <h2>{String(data.status || "unknown").toUpperCase()}</h2>
-            <p>Use this page to inspect runtime health, model artifacts, and deployment configuration.</p>
-          </div>
-        </div>
+      <Card>
+        <CardContent className="space-y-8">
+          <SectionHeader
+            eyebrow="System Health"
+            title={String(data.status || "unknown").toUpperCase()}
+            description="Inspect runtime health, model artifacts, storage, and deployment configuration from one diagnostics surface."
+            badge={{ label: data.status === "ok" ? "Healthy" : "Attention", variant: data.status === "ok" ? "real" : "uncertain" }}
+          />
 
-        <div className="metric-strip">
-          <div>
-            <span>Node</span>
-            <strong>{data.runtime?.nodeVersion || "n/a"}</strong>
+          <div className="four-column-grid">
+            <article className="metric-tile">
+              <span className="text-sm text-[var(--muted-foreground)]">Node Runtime</span>
+              <strong>{data.runtime?.nodeVersion || "n/a"}</strong>
+              <p className="text-sm leading-6">Application runtime version reported by the backend.</p>
+            </article>
+            <article className="metric-tile">
+              <span className="text-sm text-[var(--muted-foreground)]">DB Client</span>
+              <strong>{data.configuration?.dbClient || "n/a"}</strong>
+              <p className="text-sm leading-6">Current persistence provider backing the platform.</p>
+            </article>
+            <article className="metric-tile">
+              <span className="text-sm text-[var(--muted-foreground)]">Best Model</span>
+              <strong>{data.model?.bestModel || "n/a"}</strong>
+              <p className="text-sm leading-6">Best model artifact currently loaded by the backend.</p>
+            </article>
+            <article className="metric-tile">
+              <span className="text-sm text-[var(--muted-foreground)]">Model Version</span>
+              <strong>{data.model?.version || "n/a"}</strong>
+              <p className="text-sm leading-6">Version metadata returned from the model artifacts.</p>
+            </article>
           </div>
-          <div>
-            <span>DB Client</span>
-            <strong>{data.configuration?.dbClient || "n/a"}</strong>
-          </div>
-          <div>
-            <span>Best Model</span>
-            <strong>{data.model?.bestModel || "n/a"}</strong>
-          </div>
-          <div>
-            <span>Model Version</span>
-            <strong>{data.model?.version || "n/a"}</strong>
-          </div>
-        </div>
-      </section>
 
-      <KeyValueGrid title="Runtime" values={data.runtime} />
-      <KeyValueGrid title="Configuration" values={data.configuration} />
-      <KeyValueGrid title="Storage" values={data.storage} />
-      <KeyValueGrid title="Model" values={data.model} />
+          <div className="flex flex-wrap items-center gap-2">
+            <Badge variant={data.status === "ok" ? "real" : "uncertain"}>
+              <HeartPulse className="h-3.5 w-3.5" />
+              API {String(data.status || "unknown").toUpperCase()}
+            </Badge>
+            <Badge variant="neutral">
+              <Database className="h-3.5 w-3.5" />
+              {data.configuration?.dbClient || "Database n/a"}
+            </Badge>
+            <Badge variant="info">
+              <Activity className="h-3.5 w-3.5" />
+              Model {data.model?.bestModel || "Unavailable"}
+            </Badge>
+          </div>
+        </CardContent>
+      </Card>
+
+      <div className="two-column-grid">
+        <KeyValueSection title="Runtime" eyebrow="Runtime" values={data.runtime} icon={ServerCog} />
+        <KeyValueSection title="Configuration" eyebrow="Configuration" values={data.configuration} icon={Activity} />
+      </div>
+
+      <div className="two-column-grid">
+        <KeyValueSection title="Storage" eyebrow="Storage" values={data.storage} icon={Database} />
+        <KeyValueSection title="Model" eyebrow="Model" values={data.model} icon={HeartPulse} />
+      </div>
     </div>
   );
 }

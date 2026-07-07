@@ -1,189 +1,238 @@
+import {
+  AlertTriangle,
+  ArrowRight,
+  BrainCircuit,
+  CheckCircle2,
+  CircleOff,
+  FileDown,
+  Globe2,
+  ShieldAlert,
+  Sparkles,
+  Target,
+  XCircle,
+} from "lucide-react";
 import { api } from "../api";
 import { RESULT_META } from "../constants";
+import { InfoList } from "./InfoList";
+import { SectionHeader } from "./SectionHeader";
 import { SourceReputationBadge, SourceReputationCard } from "./SourceReputationCard";
+import { Badge } from "./ui/badge";
+import { Button } from "./ui/button";
+import { Card, CardContent } from "./ui/card";
+import { EmptyState } from "./ui/empty-state";
+import { Gauge } from "./ui/gauge";
+import { ProgressBar } from "./ui/progress";
 
 const CLAIM_VERDICT_META = {
   SUPPORTED: {
     label: "Supported",
-    symbol: "\u2713",
-    tone: "supported",
+    icon: CheckCircle2,
+    badge: "trusted",
+    border: "border-[rgba(52,211,153,0.24)]",
+    background: "bg-[rgba(52,211,153,0.08)]",
   },
   UNVERIFIED: {
     label: "Unverified",
-    symbol: "\u26A0",
-    tone: "unverified",
+    icon: AlertTriangle,
+    badge: "uncertain",
+    border: "border-[rgba(255,194,102,0.24)]",
+    background: "bg-[rgba(255,194,102,0.08)]",
   },
   CONTRADICTED: {
     label: "Contradicted",
-    symbol: "\u2717",
-    tone: "contradicted",
+    icon: XCircle,
+    badge: "suspicious",
+    border: "border-[rgba(255,92,118,0.24)]",
+    background: "bg-[rgba(255,92,118,0.08)]",
   },
 };
 
-function ProbabilityRow({ label, value }) {
-  const percentage = Math.round(Number(value || 0) * 100);
+function resolveResultVariant(label) {
+  if (label === "REAL") {
+    return "real";
+  }
+
+  if (label === "FAKE") {
+    return "fake";
+  }
+
+  return "uncertain";
+}
+
+function resolveGaugeTone(label) {
+  if (label === "REAL") {
+    return "success";
+  }
+
+  if (label === "FAKE") {
+    return "danger";
+  }
+
+  return "warning";
+}
+
+function renderTagKey(item) {
+  if (typeof item === "string") {
+    return item;
+  }
+
+  return `${item.term || item.title || item.sentence || item.claim || item.label || item.emotion || item.style}-${item.weight || item.score || item.index || item.confidence || 0}`;
+}
+
+function ProbabilityList({ items = [] }) {
+  if (!items.length) {
+    return <p className="text-sm text-[var(--muted-foreground)]">No probability data available.</p>;
+  }
 
   return (
-    <div className="probability-row">
-      <div className="probability-row__label">
-        <span>{label}</span>
-        <span>{percentage}%</span>
-      </div>
-      <div className="probability-bar">
-        <span style={{ width: `${percentage}%` }} />
-      </div>
+    <div className="space-y-4">
+      {items.map((item) => (
+        <ProgressBar key={item.label} label={item.label} value={item.value} helper={`${Math.round(item.value)}%`} tone={item.tone || "accent"} />
+      ))}
     </div>
   );
 }
 
 function TagList({ items, renderLabel }) {
   if (!items?.length) {
-    return <span className="muted-text">No additional evidence available.</span>;
+    return <p className="text-sm text-[var(--muted-foreground)]">No additional evidence available.</p>;
   }
 
   return (
-    <div className="tag-list">
+    <div className="tag-cloud">
       {items.map((item) => {
         const value = renderLabel ? renderLabel(item) : item;
-        const key =
-          typeof item === "string"
-            ? item
-            : `${item.term || item.title || item.sentence || item.claim || item.label || item.emotion || item.style}-${item.weight || item.score || item.index || item.confidence || 0}`;
-        return <span key={key}>{value}</span>;
-      })}
-    </div>
-  );
-}
 
-function EntityGroup({ title, values }) {
-  return (
-    <div className="entity-group">
-      <strong>{title}</strong>
-      <TagList items={values} />
+        return <span key={renderTagKey(item)}>{value}</span>;
+      })}
     </div>
   );
 }
 
 function InsightTile({ label, value, detail }) {
   return (
-    <article className="nlp-insight-tile">
-      <span>{label}</span>
-      <strong>{value}</strong>
-      <small>{detail}</small>
+    <article className="metric-tile">
+      <span className="text-sm text-[var(--muted-foreground)]">{label}</span>
+      <strong className="text-[1.35rem]">{value}</strong>
+      <p className="text-sm leading-6">{detail}</p>
     </article>
   );
 }
 
-function ScoreRows({ items = [], labelKey = "label", valueKey = "score", suffix = "%", scale = 100 }) {
-  if (!items.length) {
-    return <p>No structured scores are available.</p>;
-  }
-
+function InfoCard({ eyebrow, title, description, children }) {
   return (
-    <div className="probability-list">
-      {items.map((item) => {
-        const label = item[labelKey];
-        const numericValue = Number(item[valueKey] || 0);
-        const percentage = Math.round(numericValue * scale);
-
-        return (
-          <div key={`${label}-${percentage}`} className="probability-row">
-            <div className="probability-row__label">
-              <span>{label}</span>
-              <span>
-                {percentage}
-                {suffix}
-              </span>
-            </div>
-            <div className="probability-bar">
-              <span style={{ width: `${Math.min(percentage, 100)}%` }} />
-            </div>
-          </div>
-        );
-      })}
+    <div className="rounded-[28px] border border-[var(--border-subtle)] bg-[var(--panel-soft)] p-5">
+      <div className="space-y-3">
+        <span className="eyebrow">{eyebrow}</span>
+        <h3 className="font-display text-xl font-semibold tracking-[-0.04em] text-[var(--foreground)]">{title}</h3>
+        {description ? <p className="text-sm leading-7 text-[var(--muted-foreground)]">{description}</p> : null}
+      </div>
+      <div className="mt-5 space-y-5">{children}</div>
     </div>
   );
 }
 
 function EvidenceSourceCard({ source }) {
   return (
-    <article className="evidence-source-card">
-      <div className="rule-card__header">
-        <strong>{source.title}</strong>
-        <span>{Math.round(Number(source.similarityScore || 0) * 100)}% similar</span>
+    <article className="rounded-[26px] border border-[var(--border-subtle)] bg-[var(--panel)] p-5">
+      <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
+        <div className="space-y-2">
+          <strong className="block text-base font-semibold text-[var(--foreground)]">{source.title}</strong>
+          <p className="text-sm leading-6 text-[var(--muted-foreground)]">{source.summary || source.snippet || "No summary available."}</p>
+        </div>
+        <Badge variant="info">{Math.round(Number(source.similarityScore || 0) * 100)}% similar</Badge>
       </div>
-      <p>{source.summary || source.snippet || "No summary available."}</p>
-      <small>
-        {source.source} {source.publishedAt ? `| ${source.publishedAt}` : ""} | {source.stance}
-      </small>
+      <div className="mt-4 flex flex-wrap gap-2 text-xs text-[var(--muted-foreground)]">
+        <span className="pill-chip">{source.source}</span>
+        {source.publishedAt ? <span className="pill-chip">{source.publishedAt}</span> : null}
+        <span className="pill-chip">{source.stance}</span>
+      </div>
     </article>
   );
 }
 
 function ClaimVerificationCard({ claim, defaultOpen = false }) {
   const meta = CLAIM_VERDICT_META[claim.verdict] || CLAIM_VERDICT_META.UNVERIFIED;
+  const Icon = meta.icon;
 
   return (
-    <details className={`claim-card claim-card--${meta.tone}`} open={defaultOpen}>
-      <summary className="claim-card__summary">
-        <div className="claim-card__summary-main">
-          <span className={`claim-verdict claim-verdict--${meta.tone}`}>
-            {meta.symbol} {meta.label}
-          </span>
-          <strong>
-            Claim {claim.index}: {claim.claim}
-          </strong>
-        </div>
-
-        <div className="claim-card__summary-metrics">
-          <span>{claim.confidence}% confidence</span>
-          <span>{claim.evidenceCount} evidence item(s)</span>
+    <details
+      open={defaultOpen}
+      className={`overflow-hidden rounded-[28px] border ${meta.border} ${meta.background}`}
+    >
+      <summary className="cursor-pointer list-none p-5">
+        <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
+          <div className="space-y-3">
+            <Badge variant={meta.badge}>
+              <Icon className="h-3.5 w-3.5" />
+              {meta.label}
+            </Badge>
+            <strong className="block text-lg font-semibold text-[var(--foreground)]">
+              Claim {claim.index}: {claim.claim}
+            </strong>
+          </div>
+          <div className="grid gap-2 text-sm text-[var(--muted-foreground)] md:text-right">
+            <span>{claim.confidence}% confidence</span>
+            <span>{claim.evidenceCount} evidence item(s)</span>
+          </div>
         </div>
       </summary>
 
-      <div className="claim-card__body">
-        <div className="detail-list">
-          <div className="detail-list__row">
-            <span>Final Verdict</span>
-            <strong>
-              {meta.symbol} {meta.label}
-            </strong>
-          </div>
-          <div className="detail-list__row">
-            <span>Confidence</span>
-            <strong>{claim.confidence}%</strong>
-          </div>
-          <div className="detail-list__row">
-            <span>Similarity Score</span>
-            <strong>{Math.round(Number(claim.similarityScore || 0) * 100)}%</strong>
-          </div>
-          <div className="detail-list__row">
-            <span>Evidence Breakdown</span>
-            <strong>
-              {claim.supportingArticlesCount} support / {claim.contradictingArticlesCount} contradict / {claim.relatedArticlesCount} related
-            </strong>
-          </div>
-        </div>
+      <div className="space-y-5 border-t border-[var(--border-subtle)] px-5 pb-5 pt-4">
+        <InfoList
+          items={[
+            { label: "Final Verdict", value: meta.label },
+            { label: "Confidence", value: `${claim.confidence}%` },
+            { label: "Similarity Score", value: `${Math.round(Number(claim.similarityScore || 0) * 100)}%` },
+            {
+              label: "Evidence Breakdown",
+              value: `${claim.supportingArticlesCount} support / ${claim.contradictingArticlesCount} contradict / ${claim.relatedArticlesCount} related`,
+            },
+          ]}
+        />
 
-        <div className="claim-card__section">
+        <div className="space-y-2">
           <span className="eyebrow">Explanation</span>
-          <p>{claim.explanation}</p>
+          <p className="text-sm leading-7 text-[var(--muted-foreground)]">{claim.explanation}</p>
         </div>
 
-        <div className="claim-card__section">
+        <div className="space-y-3">
           <span className="eyebrow">Evidence</span>
           {claim.evidence?.length ? (
-            <div className="evidence-source-list">
+            <div className="space-y-3">
               {claim.evidence.map((source) => (
                 <EvidenceSourceCard key={`${claim.id}-${source.source}-${source.title}`} source={source} />
               ))}
             </div>
           ) : (
-            <div className="inline-warning">Unable to verify this claim using trusted sources.</div>
+            <div className="callout callout-warning">Unable to verify this claim using trusted sources.</div>
           )}
         </div>
       </div>
     </details>
+  );
+}
+
+function ExportButtons({ analysisId }) {
+  if (!analysisId) {
+    return null;
+  }
+
+  return (
+    <div className="flex flex-wrap items-center gap-3">
+      <Button type="button" variant="outline" onClick={() => api.downloadAnalysisCsv(analysisId)}>
+        <FileDown className="h-4 w-4" />
+        Export CSV
+      </Button>
+      <Button type="button" variant="outline" onClick={() => api.downloadAnalysisJson(analysisId)}>
+        <FileDown className="h-4 w-4" />
+        Export JSON
+      </Button>
+      <Button type="button" variant="outline" onClick={() => api.downloadAnalysisPdf(analysisId)}>
+        <FileDown className="h-4 w-4" />
+        Export PDF
+      </Button>
+    </div>
   );
 }
 
@@ -210,90 +259,225 @@ export function AnalysisResultCard({ analysis }) {
   const writingStyle = analysis.writingStyle || analysis.nlpMetadata?.writingStyle || null;
   const emotion = analysis.emotion || analysis.nlpMetadata?.emotion || null;
   const entityCounts = analysis.entities?.counts || null;
+  const finalProbabilityItems = Object.entries(finalProbabilities).map(([label, value]) => ({
+    label,
+    value: Math.round(Number(value || 0) * 100),
+    tone: label === "REAL" ? "success" : label === "FAKE" ? "danger" : "warning",
+  }));
+  const rawProbabilityItems = Object.entries(modelProbabilities).map(([label, value]) => ({
+    label,
+    value: Math.round(Number(value || 0) * 100),
+    tone: label === "REAL" ? "success" : label === "FAKE" ? "danger" : "warning",
+  }));
 
   return (
-    <section className="panel result-card">
-      <div className="result-card__header">
-        <div>
-          <span className={`status-badge status-badge--${meta.tone}`}>{meta.badge}</span>
-          <h2>{analysis.title}</h2>
-          <p>{meta.description}</p>
+    <Card>
+      <CardContent className="space-y-8">
+        <SectionHeader
+          eyebrow="Explainable Report"
+          title={analysis.title}
+          description={meta.description}
+          badge={{ label: meta.badge, variant: resolveResultVariant(analysis.label) }}
+          actions={<ExportButtons analysisId={analysis.id} />}
+        />
+
+        <div className="flex flex-wrap items-center gap-2">
+          <Badge variant="info">
+            <BrainCircuit className="h-3.5 w-3.5" />
+            {analysis.model || "Model unavailable"}
+          </Badge>
+          <Badge variant="neutral">{analysis.modelVersion || "No model version"}</Badge>
+          <Badge variant="neutral">{analysis.trustLevel || "Trust level unavailable"}</Badge>
+          <Badge variant="neutral">{analysis.riskLevel || "Risk unavailable"}</Badge>
           {sourceReputation ? <SourceReputationBadge badge={sourceReputation.badge} /> : null}
         </div>
 
-        <div className="result-card__numbers">
-          <div>
-            <span>Confidence</span>
-            <strong>{analysis.confidence}%</strong>
+        {analysis.label === "UNCERTAIN" ? (
+          <div className="callout callout-warning">
+            This article is marked UNCERTAIN because the evidence is mixed or the confidence is below the configured threshold.
           </div>
-          <div>
-            <span>Trust Score</span>
-            <strong>{trustScore ?? "n/a"}/100</strong>
-          </div>
-          <div>
-            <span>Trust Level</span>
-            <strong>{analysis.trustLevel || "Not available"}</strong>
-          </div>
+        ) : null}
+        {analysis.warning ? <div className="callout callout-warning">{analysis.warning}</div> : null}
+
+        <div className="three-column-grid">
+          <Gauge value={analysis.confidence} label="Confidence Score" helper="confidence" tone={resolveGaugeTone(analysis.label)} />
+          <Gauge value={trustScore ?? 0} label="Trust Score" helper="trust" tone={resolveGaugeTone(analysis.label)} />
+          <Gauge value={Math.round(Number(analysis.evidenceConfidence || 0) * 100)} label="Evidence Confidence" helper="evidence" tone="accent" />
         </div>
-      </div>
 
-      {analysis.label === "UNCERTAIN" ? (
-        <div className="inline-warning">This article is marked UNCERTAIN because the evidence is mixed or the confidence is below the configured threshold.</div>
-      ) : null}
+        <div className="four-column-grid">
+          <InsightTile label="Prediction" value={analysis.label} detail={analysis.explanation || "Prediction explanation is not available."} />
+          <InsightTile label="Trust Level" value={analysis.trustLevel || "Unknown"} detail={`Risk level: ${analysis.riskLevel || "Unknown"}`} />
+          <InsightTile label="Final Trust Score" value={`${trustScore ?? "n/a"}/100`} detail={`Evidence-adjusted: ${evidenceAdjustedScore ?? "n/a"}/100`} />
+          <InsightTile label="Source" value={analysis.source || "Manual input"} detail={analysis.author || "Author not provided"} />
+        </div>
 
-      <div className="result-card__body">
-        <div className="result-card__section-grid">
-          <div className="result-card__block">
-            <span className="eyebrow">Trust Score</span>
-            <div className="detail-list">
-              <div className="detail-list__row">
-                <span>Final Trust Score</span>
-                <strong>{trustScore ?? "n/a"}/100</strong>
+        <div className="two-column-grid">
+          <InfoCard eyebrow="Explanation" title="Why the platform predicted this label" description="Machine learning, credibility rules, evidence verification, and writing signals all contribute here.">
+            <p className="text-sm leading-7 text-[var(--muted-foreground)]">{analysis.explanation}</p>
+            <TagList items={trustReasons} />
+          </InfoCard>
+
+          <InfoCard eyebrow="Recommendation" title="Next best action" description="What an analyst or reader should do after reviewing this result.">
+            <p className="text-sm leading-7 text-[var(--muted-foreground)]">{analysis.recommendation || "No recommendation available."}</p>
+            <InfoList
+              items={[
+                { label: "Confidence", value: `${analysis.confidence}%` },
+                { label: "Evidence Verdict", value: analysis.evidenceVerdict || "UNVERIFIED" },
+                { label: "Evidence-adjusted Score", value: `${evidenceAdjustedScore ?? "n/a"}/100` },
+              ]}
+            />
+          </InfoCard>
+        </div>
+
+        {sourceReputation ? <SourceReputationCard sourceReputation={sourceReputation} /> : null}
+
+        <div className="two-column-grid">
+          <InfoCard eyebrow="Probability Distribution" title="Final credibility probabilities" description="The final probability distribution combines the model output with platform decision rules.">
+            <ProbabilityList items={finalProbabilityItems} />
+          </InfoCard>
+
+          <InfoCard eyebrow="Raw ML Output" title="Model-only probabilities" description="Raw classifier scores before credibility adjustments and evidence weighting.">
+            <ProbabilityList items={rawProbabilityItems} />
+          </InfoCard>
+        </div>
+
+        <div className="two-column-grid">
+          <InfoCard eyebrow="Influential Keywords" title="Terms that pushed the model" description="Top weighted terms that influenced the current prediction.">
+            <TagList
+              items={analysis.influentialKeywords}
+              renderLabel={(item) => `${item.term} (${Math.round(Number(item.weight || 0) * 100)}%)${item.direction === "opposes" ? " opposes" : ""}`}
+            />
+          </InfoCard>
+
+          <InfoCard eyebrow="Extracted Keywords" title="Content keywords" description="Keyword extraction from the article body and metadata.">
+            <TagList
+              items={keywordMetadata?.items || analysis.keywords}
+              renderLabel={(item) =>
+                typeof item === "string" ? item : `${item.term} (${Math.round(Number(item.score || 0))})${item.source ? ` - ${item.source}` : ""}`
+              }
+            />
+          </InfoCard>
+        </div>
+
+        <div className="two-column-grid">
+          <InfoCard eyebrow="Suspicious Sentences" title="Highlighted language risks" description="Sentences with strong sensational, emotional, or suspicious patterns.">
+            {analysis.suspiciousSentences?.length ? (
+              <div className="space-y-3">
+                {analysis.suspiciousSentences.map((item, index) => (
+                  <article key={`${item.sentence}-${index}`} className="rounded-[24px] border border-[rgba(255,194,102,0.24)] bg-[rgba(255,194,102,0.08)] p-4">
+                    <div className="flex flex-wrap items-center justify-between gap-3">
+                      <strong className="text-sm font-semibold text-[var(--foreground)]">{Math.round(Number(item.score || 0) * 100)}% suspicion</strong>
+                      <Badge variant="uncertain">Sentence Flag</Badge>
+                    </div>
+                    <p className="mt-3 text-sm leading-7 text-[var(--foreground)]">{item.sentence}</p>
+                    <p className="mt-2 text-xs leading-6 text-[var(--muted-foreground)]">{item.reasons?.join(", ") || "Model warning"}</p>
+                  </article>
+                ))}
               </div>
-              <div className="detail-list__row">
-                <span>Trust Level</span>
-                <strong>{analysis.trustLevel || "Not available"}</strong>
+            ) : (
+              <p className="text-sm text-[var(--muted-foreground)]">No strongly suspicious sentences were highlighted.</p>
+            )}
+          </InfoCard>
+
+          <InfoCard eyebrow="Credibility Rules" title="Rule engine findings" description="Rule-based signals blended into the final trust score.">
+            {analysis.ruleFindings?.filter((item) => Number(item.score || 0) > 0).length ? (
+              <div className="space-y-3">
+                {analysis.ruleFindings
+                  .filter((item) => Number(item.score || 0) > 0)
+                  .slice(0, 6)
+                  .map((item) => (
+                    <article key={item.id} className="rounded-[24px] border border-[var(--border-subtle)] bg-[var(--panel)] p-4">
+                      <div className="flex flex-wrap items-center justify-between gap-3">
+                        <strong className="text-sm font-semibold text-[var(--foreground)]">{item.title}</strong>
+                        <Badge variant={Number(item.score || 0) >= 0.5 ? "uncertain" : "neutral"}>
+                          {Math.round(Number(item.score || 0) * 100)}%
+                        </Badge>
+                      </div>
+                      <p className="mt-3 text-sm leading-7 text-[var(--muted-foreground)]">{item.message}</p>
+                      <p className="mt-2 text-xs leading-6 text-[var(--muted-foreground)]">{item.evidence}</p>
+                    </article>
+                  ))}
               </div>
-              <div className="detail-list__row">
-                <span>Evidence-adjusted Score</span>
-                <strong>{evidenceAdjustedScore ?? "n/a"}/100</strong>
+            ) : (
+              <p className="text-sm text-[var(--muted-foreground)]">No strong rule-based credibility concerns were detected.</p>
+            )}
+          </InfoCard>
+        </div>
+
+        <InfoCard eyebrow="Evidence Verification" title="Claim support and contradiction report" description="Trusted-source search and semantic similarity are used to validate the article's factual claims.">
+          {evidence?.hasEvidence ? (
+            <>
+              <InfoList
+                items={[
+                  { label: "Trusted Sources Found", value: analysis.trustedSourcesFound?.length || 0 },
+                  { label: "Supporting Articles", value: analysis.supportingArticlesCount || 0 },
+                  { label: "Contradicting Articles", value: analysis.contradictingArticlesCount || 0 },
+                  { label: "Similarity Score", value: `${Math.round(Number(analysis.similarityScore || 0) * 100)}%` },
+                  { label: "Evidence Confidence", value: `${Math.round(Number(analysis.evidenceConfidence || 0) * 100)}%` },
+                  { label: "Evidence-adjusted Score", value: `${evidenceAdjustedScore ?? "n/a"}/100` },
+                ]}
+              />
+              <div className="tag-cloud">
+                {(analysis.trustedSourcesFound || []).map((item) => (
+                  <span key={item}>{item}</span>
+                ))}
               </div>
-              <div className="detail-list__row">
-                <span>Risk Level</span>
-                <strong>{analysis.riskLevel}</strong>
-              </div>
+            </>
+          ) : (
+            <div className="callout callout-warning">Unable to verify this claim using trusted sources.</div>
+          )}
+        </InfoCard>
+
+        <InfoCard eyebrow="Trust Signals" title="Weighted credibility components" description="Configurable weights combine model probability with writing, source, metadata, and evidence signals.">
+          {trustSignals.length ? (
+            <div className="two-column-grid">
+              {trustSignals.map((signal) => (
+                <article key={signal.key} className="rounded-[26px] border border-[var(--border-subtle)] bg-[var(--panel)] p-5">
+                  <div className="flex items-start justify-between gap-3">
+                    <div>
+                      <strong className="block text-base font-semibold text-[var(--foreground)]">{signal.title}</strong>
+                      <p className="mt-2 text-sm leading-6 text-[var(--muted-foreground)]">
+                        {signal.score >= 60 ? signal.positiveReason : signal.cautionReason}
+                      </p>
+                    </div>
+                    <Badge variant={signal.score >= 60 ? "real" : "uncertain"}>
+                      {signal.score}/100
+                    </Badge>
+                  </div>
+                  <ProgressBar className="mt-4" label="Weight" value={Math.round(Number(signal.weight || 0) * 100)} helper={`${signal.weight}`} tone="accent" />
+                  <p className="mt-3 text-xs leading-6 text-[var(--muted-foreground)]">{signal.evidence}</p>
+                </article>
+              ))}
             </div>
-          </div>
+          ) : (
+            <p className="text-sm text-[var(--muted-foreground)]">No trust signal breakdown is available.</p>
+          )}
+        </InfoCard>
 
-          <div className="result-card__block">
-            <span className="eyebrow">Reason</span>
-            <p>{analysis.trustExplanation || "No trust explanation available."}</p>
-            {trustReasons.length ? <TagList items={trustReasons} /> : <p>No specific trust reasons were stored for this analysis.</p>}
-          </div>
-        </div>
-
-        <div className="result-card__block">
-          <span className="eyebrow">Explanation</span>
-          <p>{analysis.explanation}</p>
-        </div>
-
-        <div className="result-card__block">
-          <span className="eyebrow">Recommendation</span>
-          <p>{analysis.recommendation || "No recommendation available."}</p>
-        </div>
-
-        <SourceReputationCard sourceReputation={sourceReputation} />
-
-        <div className="result-card__block">
-          <div className="panel__header panel__header--split">
-            <div>
-              <span className="eyebrow">Advanced NLP</span>
-              <h3>Language, Topic, and Style Intelligence</h3>
+        <InfoCard eyebrow="Claim Verification" title="Extracted factual claims" description="Each claim is checked separately and can be expanded for detailed supporting or contradicting evidence.">
+          {claimAnalyses.length ? (
+            <div className="space-y-4">
+              {claimAnalyses.map((claim, index) => (
+                <ClaimVerificationCard key={claim.id || claim.index} claim={claim} defaultOpen={index === 0} />
+              ))}
             </div>
-            <span className="muted-text">Stored metadata profile</span>
-          </div>
+          ) : (
+            <EmptyState
+              icon={ShieldAlert}
+              title="No extracted claims"
+              description="No individual factual claims could be extracted from this article."
+              className="min-h-[220px]"
+            />
+          )}
+        </InfoCard>
 
-          <div className="nlp-insight-grid">
+        <InfoCard eyebrow="Article Summary" title="Condensed narrative" description="A short summary to help the user review the article before deciding what to trust.">
+          <p className="text-sm leading-7 text-[var(--muted-foreground)]">{analysis.summary || "No summary available."}</p>
+        </InfoCard>
+
+        <InfoCard eyebrow="Advanced NLP" title="Language, topic, sentiment, and writing profile" description="Stored metadata extracted from the article text for explainability and analytics.">
+          <div className="three-column-grid">
             <InsightTile
               label="Language"
               value={languageInfo?.name || analysis.language || "Unknown"}
@@ -303,11 +487,7 @@ export function AnalysisResultCard({ analysis }) {
                   : "Automatic language detection"
               }
             />
-            <InsightTile
-              label="Article Category"
-              value={articleCategory?.label || "General"}
-              detail={articleCategory?.primaryTopic || "Primary editorial category"}
-            />
+            <InsightTile label="Article Category" value={articleCategory?.label || "General"} detail={articleCategory?.primaryTopic || "Primary editorial category"} />
             <InsightTile
               label="Primary Topic"
               value={topicDetection?.primary?.label || "General News"}
@@ -331,399 +511,157 @@ export function AnalysisResultCard({ analysis }) {
                   : "Tone and structure analysis"
               }
             />
-            <InsightTile
-              label="Dominant Emotion"
-              value={emotion?.dominant || "neutral"}
-              detail={emotion?.summary || "Emotion profile detected from language cues"}
-            />
+            <InsightTile label="Dominant Emotion" value={emotion?.dominant || "neutral"} detail={emotion?.summary || "Emotion profile detected from language cues"} />
           </div>
-        </div>
+        </InfoCard>
 
-        <div className="result-card__section-grid">
-          <div className="result-card__block">
-            <span className="eyebrow">Language and Category</span>
-            <div className="detail-list">
-              <div className="detail-list__row">
-                <span>Detected Language</span>
-                <strong>{languageInfo?.name || analysis.language || "Unknown"}</strong>
-              </div>
-              <div className="detail-list__row">
-                <span>Language Confidence</span>
-                <strong>{Math.round(Number(languageInfo?.confidence || 0) * 100)}%</strong>
-              </div>
-              <div className="detail-list__row">
-                <span>Article Category</span>
-                <strong>{articleCategory?.label || "General"}</strong>
-              </div>
-              <div className="detail-list__row">
-                <span>Primary Topic</span>
-                <strong>{topicDetection?.primary?.label || "General News"}</strong>
-              </div>
-            </div>
-            <p>{articleCategory?.rationale || "Topical classification is based on headline/body keyword patterns."}</p>
-          </div>
-
-          <div className="result-card__block">
-            <span className="eyebrow">Reading Complexity</span>
-            <div className="detail-list">
-              <div className="detail-list__row">
-                <span>Reading Level</span>
-                <strong>{readingComplexity?.level || "Standard"}</strong>
-              </div>
-              <div className="detail-list__row">
-                <span>Estimated Reading Time</span>
-                <strong>{readingComplexity?.readingTimeMinutes || analysis.articleStats?.readingTimeMinutes || 1} min</strong>
-              </div>
-              <div className="detail-list__row">
-                <span>Grade Level</span>
-                <strong>{readingComplexity?.fleschKincaidGrade ?? "n/a"}</strong>
-              </div>
-              <div className="detail-list__row">
-                <span>Avg Sentence Length</span>
-                <strong>{readingComplexity?.averageSentenceLength ?? "n/a"} words</strong>
-              </div>
-              <div className="detail-list__row">
-                <span>Lexical Diversity</span>
-                <strong>{Math.round(Number(readingComplexity?.lexicalDiversity || analysis.articleStats?.lexicalDiversity || 0) * 100)}%</strong>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div className="result-card__section-grid">
-          <div className="result-card__block">
-            <span className="eyebrow">Topic Detection</span>
+        <div className="two-column-grid">
+          <InfoCard eyebrow="Topic Detection" title="Topic distribution" description="Probability across editorial themes and article categories.">
             <TagList
               items={topicDetection?.distribution || []}
               renderLabel={(item) => `${item.label} (${Math.round(Number(item.confidence || item.strength || 0) * 100)}%)`}
             />
-          </div>
+          </InfoCard>
 
-          <div className="result-card__block">
-            <span className="eyebrow">Emotion Detection</span>
-            <ScoreRows
+          <InfoCard eyebrow="Emotion Detection" title="Emotion distribution" description="Detected emotional mix across the article's wording.">
+            <ProbabilityList
               items={(emotion?.distribution || []).map((item) => ({
                 label: item.emotion,
-                score: item.score,
+                value: Math.round(Number(item.score || 0) * 100),
+                tone: "accent",
               }))}
             />
-          </div>
+          </InfoCard>
         </div>
 
-        <div className="result-card__section-grid">
-          <div className="result-card__block">
-            <span className="eyebrow">Writing Style Detection</span>
-            <div className="detail-list">
-              <div className="detail-list__row">
-                <span>Dominant Style</span>
-                <strong>{writingStyle?.label || "Not available"}</strong>
-              </div>
-              <div className="detail-list__row">
-                <span>Style Confidence</span>
-                <strong>{Math.round(Number(writingStyle?.confidence || 0) * 100)}%</strong>
-              </div>
-            </div>
-            <p>{writingStyle?.rationale || "Writing style analysis is not available for this article."}</p>
+        <div className="two-column-grid">
+          <InfoCard eyebrow="Reading Complexity" title="Readability and structure" description="Useful for spotting sensational, low-quality, or unnatural writing patterns.">
+            <InfoList
+              items={[
+                { label: "Reading Level", value: readingComplexity?.level || "Standard" },
+                { label: "Estimated Reading Time", value: `${readingComplexity?.readingTimeMinutes || analysis.articleStats?.readingTimeMinutes || 1} min` },
+                { label: "Grade Level", value: readingComplexity?.fleschKincaidGrade ?? "n/a" },
+                { label: "Avg Sentence Length", value: `${readingComplexity?.averageSentenceLength ?? "n/a"} words` },
+                {
+                  label: "Lexical Diversity",
+                  value: `${Math.round(Number(readingComplexity?.lexicalDiversity || analysis.articleStats?.lexicalDiversity || 0) * 100)}%`,
+                },
+              ]}
+            />
+          </InfoCard>
+
+          <InfoCard eyebrow="Writing Style Detection" title="Tone and narrative style" description="Style cues contribute to both explanation quality and trust scoring.">
+            <InfoList
+              items={[
+                { label: "Dominant Style", value: writingStyle?.label || "Not available" },
+                { label: "Style Confidence", value: `${Math.round(Number(writingStyle?.confidence || 0) * 100)}%` },
+              ]}
+            />
+            <p className="text-sm leading-7 text-[var(--muted-foreground)]">
+              {writingStyle?.rationale || "Writing style analysis is not available for this article."}
+            </p>
             <TagList items={writingStyle?.indicators || []} />
-          </div>
+          </InfoCard>
+        </div>
 
-          <div className="result-card__block">
-            <span className="eyebrow">Keyword Extraction</span>
-            <TagList
-              items={keywordMetadata?.items || []}
-              renderLabel={(item) => `${item.term} (${Math.round(Number(item.score || 0))})${item.source ? ` · ${item.source}` : ""}`}
+        <div className="two-column-grid">
+          <InfoCard eyebrow="Sentiment Analysis" title="Article sentiment profile" description="Sentiment, polarity, and emotional intensity extracted from the article text.">
+            <InfoList
+              items={[
+                { label: "Label", value: analysis.sentiment?.label || "Not available" },
+                { label: "Score", value: analysis.sentiment?.score ?? "n/a" },
+                { label: "Emotional Intensity", value: `${Math.round(Number(analysis.sentiment?.emotionalIntensity || 0) * 100)}%` },
+                { label: "Positive vs Negative", value: `${analysis.sentiment?.positiveCount || 0} / ${analysis.sentiment?.negativeCount || 0}` },
+              ]}
             />
-          </div>
-        </div>
+          </InfoCard>
 
-        <div className="result-card__section-grid">
-          <div className="result-card__block">
-            <span className="eyebrow">Claim Summary</span>
-            <div className="detail-list">
-              <div className="detail-list__row">
-                <span>Supported Claims</span>
-                <strong>{analysis.supportedClaimsCount || 0}</strong>
-              </div>
-              <div className="detail-list__row">
-                <span>Unverified Claims</span>
-                <strong>{analysis.unverifiedClaimsCount || 0}</strong>
-              </div>
-              <div className="detail-list__row">
-                <span>Contradicted Claims</span>
-                <strong>{analysis.contradictedClaimsCount || 0}</strong>
-              </div>
-              <div className="detail-list__row">
-                <span>Evidence Verdict</span>
-                <strong>{analysis.evidenceVerdict || "UNVERIFIED"}</strong>
-              </div>
-            </div>
-          </div>
-
-          <div className="result-card__block">
-            <span className="eyebrow">Evidence Verification</span>
-            {evidence?.hasEvidence ? (
-              <div className="detail-list">
-                <div className="detail-list__row">
-                  <span>Trusted Sources Found</span>
-                  <strong>{analysis.trustedSourcesFound?.length || 0}</strong>
-                </div>
-                <div className="detail-list__row">
-                  <span>Supporting Articles</span>
-                  <strong>{analysis.supportingArticlesCount || 0}</strong>
-                </div>
-                <div className="detail-list__row">
-                  <span>Contradicting Articles</span>
-                  <strong>{analysis.contradictingArticlesCount || 0}</strong>
-                </div>
-                <div className="detail-list__row">
-                  <span>Similarity Score</span>
-                  <strong>{Math.round(Number(analysis.similarityScore || 0) * 100)}%</strong>
-                </div>
-                <div className="detail-list__row">
-                  <span>Evidence Confidence</span>
-                  <strong>{Math.round(Number(analysis.evidenceConfidence || 0) * 100)}%</strong>
-                </div>
-                <div className="detail-list__row">
-                  <span>Evidence-adjusted Score</span>
-                  <strong>{evidenceAdjustedScore ?? "n/a"}/100</strong>
-                </div>
-              </div>
-            ) : (
-              <div className="inline-warning">Unable to verify this claim using trusted sources.</div>
-            )}
-          </div>
-        </div>
-
-        <div className="result-card__block">
-          <div className="panel__header panel__header--split">
-            <div>
-              <span className="eyebrow">Trust Signals</span>
-              <h3>Weighted Credibility Components</h3>
-            </div>
-            <span className="muted-text">{trustSignals.length} configurable factors</span>
-          </div>
-
-          <div className="rule-list">
-            {trustSignals.length ? (
-              trustSignals.map((signal) => (
-                <article key={signal.key} className="rule-card">
-                  <div className="rule-card__header">
-                    <strong>{signal.title}</strong>
-                    <span>
-                      {signal.score}/100 | weight {signal.weight}
-                    </span>
-                  </div>
-                  <p>{signal.score >= 60 ? signal.positiveReason : signal.cautionReason}</p>
-                  <small>{signal.evidence}</small>
-                </article>
-              ))
-            ) : (
-              <p>No trust signal breakdown is available.</p>
-            )}
-          </div>
-        </div>
-
-        <div className="result-card__block">
-          <div className="panel__header panel__header--split">
-            <div>
-              <span className="eyebrow">Claim Verification</span>
-              <h3>Expanded Claim Checks</h3>
-            </div>
-            <span className="muted-text">{claimAnalyses.length} extracted claims</span>
-          </div>
-
-          <div className="claim-list">
-            {claimAnalyses.length ? (
-              claimAnalyses.map((claim, index) => <ClaimVerificationCard key={claim.id || claim.index} claim={claim} defaultOpen={index === 0} />)
-            ) : (
-              <div className="inline-warning">No individual factual claims could be extracted from this article.</div>
-            )}
-          </div>
-        </div>
-
-        <div className="result-card__section-grid">
-          <div className="result-card__block">
-            <span className="eyebrow">Trusted Source Names</span>
-            <TagList items={analysis.trustedSourcesFound} />
-          </div>
-
-          <div className="result-card__block">
-            <span className="eyebrow">Article Summary</span>
-            <p>{analysis.summary || "No summary available."}</p>
-          </div>
-        </div>
-
-        <div className="result-card__section-grid">
-          <div className="result-card__block">
-            <span className="eyebrow">Metadata</span>
-            <div className="detail-list">
-              <div className="detail-list__row">
-                <span>Source</span>
-                <strong>{analysis.source || "Manual input"}</strong>
-              </div>
-              <div className="detail-list__row">
-                <span>Author</span>
-                <strong>{analysis.author || "Not provided"}</strong>
-              </div>
-              <div className="detail-list__row">
-                <span>Published</span>
-                <strong>{analysis.publishedAt || "Not provided"}</strong>
-              </div>
-              <div className="detail-list__row">
-                <span>Model Version</span>
-                <strong>{analysis.modelVersion || "Not available"}</strong>
-              </div>
-            </div>
-          </div>
-
-          <div className="result-card__block">
-            <span className="eyebrow">Final Probability Distribution</span>
-            <div className="probability-list">
-              {Object.entries(finalProbabilities).length ? (
-                Object.entries(finalProbabilities).map(([label, value]) => <ProbabilityRow key={label} label={label} value={value} />)
-              ) : (
-                <p>No probability data available.</p>
-              )}
-            </div>
-          </div>
-        </div>
-
-        <div className="result-card__section-grid">
-          <div className="result-card__block">
-            <span className="eyebrow">Raw ML Probabilities</span>
-            <div className="probability-list">
-              {Object.entries(modelProbabilities).length ? (
-                Object.entries(modelProbabilities).map(([label, value]) => <ProbabilityRow key={label} label={label} value={value} />)
-              ) : (
-                <p>No model probability data available.</p>
-              )}
-            </div>
-          </div>
-
-          <div className="result-card__block">
-            <span className="eyebrow">Influential Keywords</span>
-            <TagList
-              items={analysis.influentialKeywords}
-              renderLabel={(item) => `${item.term} (${Math.round(Number(item.weight || 0) * 100)}%)${item.direction === "opposes" ? " opposes" : ""}`}
+          <InfoCard eyebrow="Claim Summary" title="Claim outcome totals" description="High-level verdict counts for extracted claims.">
+            <InfoList
+              items={[
+                { label: "Supported Claims", value: analysis.supportedClaimsCount || 0 },
+                { label: "Unverified Claims", value: analysis.unverifiedClaimsCount || 0 },
+                { label: "Contradicted Claims", value: analysis.contradictedClaimsCount || 0 },
+                { label: "Evidence Verdict", value: analysis.evidenceVerdict || "UNVERIFIED" },
+              ]}
             />
-          </div>
+          </InfoCard>
         </div>
 
-        <div className="result-card__section-grid">
-          <div className="result-card__block">
-            <span className="eyebrow">Extracted Keywords</span>
-            <TagList items={analysis.keywords} />
-          </div>
-
-          <div className="result-card__block">
-            <span className="eyebrow">Suspicious Sentences</span>
-            <div className="sentence-list">
-              {analysis.suspiciousSentences?.length ? (
-                analysis.suspiciousSentences.map((item, index) => (
-                  <article key={`${item.sentence}-${index}`} className="sentence-card">
-                    <strong>{Math.round(Number(item.score || 0) * 100)}% suspicion</strong>
-                    <p>{item.sentence}</p>
-                    <small>{item.reasons?.join(", ") || "Model warning"}</small>
-                  </article>
-                ))
-              ) : (
-                <p>No strongly suspicious sentences were highlighted.</p>
-              )}
-            </div>
-          </div>
-        </div>
-
-        <div className="result-card__section-grid">
-          <div className="result-card__block">
-            <span className="eyebrow">Credibility Rule Findings</span>
-            <div className="rule-list">
-              {analysis.ruleFindings?.length ? (
-                analysis.ruleFindings
-                  .filter((item) => Number(item.score || 0) > 0)
-                  .slice(0, 6)
-                  .map((item) => (
-                    <article key={item.id} className="rule-card">
-                      <div className="rule-card__header">
-                        <strong>{item.title}</strong>
-                        <span>{Math.round(Number(item.score || 0) * 100)}%</span>
-                      </div>
-                      <p>{item.message}</p>
-                      <small>{item.evidence}</small>
-                    </article>
-                  ))
-              ) : (
-                <p>No strong rule-based credibility concerns were detected.</p>
-              )}
-            </div>
-          </div>
-
-          <div className="result-card__block">
-            <span className="eyebrow">Sentiment Analysis</span>
-            <div className="detail-list">
-              <div className="detail-list__row">
-                <span>Label</span>
-                <strong>{analysis.sentiment?.label || "Not available"}</strong>
-              </div>
-              <div className="detail-list__row">
-                <span>Score</span>
-                <strong>{analysis.sentiment?.score ?? "n/a"}</strong>
-              </div>
-              <div className="detail-list__row">
-                <span>Emotional Intensity</span>
-                <strong>{Math.round(Number(analysis.sentiment?.emotionalIntensity || 0) * 100)}%</strong>
-              </div>
-              <div className="detail-list__row">
-                <span>Positive vs Negative</span>
-                <strong>
-                  {analysis.sentiment?.positiveCount || 0} / {analysis.sentiment?.negativeCount || 0}
-                </strong>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div className="result-card__block">
-          <span className="eyebrow">Named Entities</span>
+        <InfoCard eyebrow="Named Entities" title="People, organizations, places, dates, and sources" description="Structured entities extracted for analyst review and dashboard analytics.">
           {entityCounts ? (
-            <div className="detail-list">
-              <div className="detail-list__row">
-                <span>Entities Captured</span>
-                <strong>{entityCounts.total}</strong>
-              </div>
+            <div className="mb-5 flex items-center gap-2">
+              <Badge variant="neutral">
+                <Target className="h-3.5 w-3.5" />
+                {entityCounts.total} entities captured
+              </Badge>
             </div>
           ) : null}
-          <div className="entity-grid">
-            <EntityGroup title="People" values={analysis.entities?.people} />
-            <EntityGroup title="Organizations" values={analysis.entities?.organizations} />
-            <EntityGroup title="Locations" values={analysis.entities?.locations} />
-            <EntityGroup title="Dates" values={analysis.entities?.dates} />
-            <EntityGroup title="Sources" values={analysis.entities?.sources} />
+
+          <div className="three-column-grid">
+            <div className="rounded-[24px] border border-[var(--border-subtle)] bg-[var(--panel)] p-4">
+              <strong className="text-sm font-semibold text-[var(--foreground)]">People</strong>
+              <div className="mt-3">
+                <TagList items={analysis.entities?.people} />
+              </div>
+            </div>
+            <div className="rounded-[24px] border border-[var(--border-subtle)] bg-[var(--panel)] p-4">
+              <strong className="text-sm font-semibold text-[var(--foreground)]">Organizations</strong>
+              <div className="mt-3">
+                <TagList items={analysis.entities?.organizations} />
+              </div>
+            </div>
+            <div className="rounded-[24px] border border-[var(--border-subtle)] bg-[var(--panel)] p-4">
+              <strong className="text-sm font-semibold text-[var(--foreground)]">Locations</strong>
+              <div className="mt-3">
+                <TagList items={analysis.entities?.locations} />
+              </div>
+            </div>
+            <div className="rounded-[24px] border border-[var(--border-subtle)] bg-[var(--panel)] p-4">
+              <strong className="text-sm font-semibold text-[var(--foreground)]">Dates</strong>
+              <div className="mt-3">
+                <TagList items={analysis.entities?.dates} />
+              </div>
+            </div>
+            <div className="rounded-[24px] border border-[var(--border-subtle)] bg-[var(--panel)] p-4 lg:col-span-2">
+              <div className="flex items-center gap-2">
+                <Globe2 className="h-4 w-4 text-[var(--accent-strong)]" />
+                <strong className="text-sm font-semibold text-[var(--foreground)]">Sources</strong>
+              </div>
+              <div className="mt-3">
+                <TagList items={analysis.entities?.sources} />
+              </div>
+            </div>
           </div>
-        </div>
-      </div>
+        </InfoCard>
 
-      <div className="result-card__footer">
-        <div className="result-card__footer-meta">
-          <span>Model: {analysis.model}</span>
-          <span>Saved: {analysis.date}</span>
-        </div>
+        <InfoCard eyebrow="Article Metadata" title="Source, author, dates, and model version" description="Operational metadata stored with the final analysis record.">
+          <InfoList
+            items={[
+              { label: "Source", value: analysis.source || "Manual input" },
+              { label: "Author", value: analysis.author || "Not provided" },
+              { label: "Published", value: analysis.publishedAt || "Not provided" },
+              { label: "Model Version", value: analysis.modelVersion || "Not available" },
+              { label: "Saved", value: analysis.date || "Not available" },
+              { label: "Model", value: analysis.model || "Not available" },
+            ]}
+          />
+        </InfoCard>
 
-        {analysis.id ? (
-          <div className="result-card__actions">
-            <button type="button" className="ghost-button" onClick={() => api.downloadAnalysisCsv(analysis.id)}>
-              Export CSV
-            </button>
-            <button type="button" className="ghost-button" onClick={() => api.downloadAnalysisJson(analysis.id)}>
-              Export JSON
-            </button>
-            <button type="button" className="ghost-button" onClick={() => api.downloadAnalysisPdf(analysis.id)}>
-              Export PDF
-            </button>
+        <div className="flex flex-col gap-4 border-t border-[var(--border-subtle)] pt-6 md:flex-row md:items-center md:justify-between">
+          <div className="flex flex-wrap items-center gap-2 text-sm text-[var(--muted-foreground)]">
+            <span className="pill-chip">
+              <Sparkles className="h-3.5 w-3.5" />
+              Model: {analysis.model}
+            </span>
+            <span className="pill-chip">
+              <ArrowRight className="h-3.5 w-3.5" />
+              Saved: {analysis.date}
+            </span>
           </div>
-        ) : null}
-      </div>
-
-      {analysis.warning ? <div className="inline-warning">{analysis.warning}</div> : null}
-    </section>
+          <ExportButtons analysisId={analysis.id} />
+        </div>
+      </CardContent>
+    </Card>
   );
 }

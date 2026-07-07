@@ -1,61 +1,64 @@
 export function SkeletonBlock({ className = "" }) {
-  return <div className={`skeleton ${className}`.trim()} aria-hidden="true" />;
+  return <div className={`shimmer-block ${className}`.trim()} aria-hidden="true" />;
 }
 
 export function DashboardSkeleton() {
   return (
-    <div className="page-grid dashboard-grid">
-      <section className="panel dashboard-hero skeleton-panel">
-        <div className="dashboard-hero__content">
-          <SkeletonBlock className="skeleton-pill" />
-          <SkeletonBlock className="skeleton-title skeleton-title--xl" />
-          <SkeletonBlock className="skeleton-line" />
-          <SkeletonBlock className="skeleton-line skeleton-line--short" />
-        </div>
-        <div className="dashboard-hero__summary">
-          <SkeletonBlock className="skeleton-card" />
-          <SkeletonBlock className="skeleton-card" />
-          <SkeletonBlock className="skeleton-card" />
+    <div className="page-grid">
+      <section className="surface-card space-y-6">
+        <SkeletonBlock className="h-6 w-36" />
+        <SkeletonBlock className="h-14 w-3/4" />
+        <SkeletonBlock className="h-5 w-full" />
+        <SkeletonBlock className="h-5 w-2/3" />
+        <div className="three-column-grid">
+          <SkeletonBlock className="h-36" />
+          <SkeletonBlock className="h-36" />
+          <SkeletonBlock className="h-36" />
         </div>
       </section>
 
-      <section className="stats-grid dashboard-stats-grid">
+      <section className="stats-grid">
         {Array.from({ length: 8 }).map((_, index) => (
-          <SkeletonBlock key={index} className="skeleton-card skeleton-card--metric" />
+          <SkeletonBlock key={index} className="h-40" />
         ))}
       </section>
 
-      <SkeletonBlock className="panel skeleton-panel skeleton-panel--wide" />
-      <SkeletonBlock className="panel skeleton-panel" />
-      <SkeletonBlock className="panel skeleton-panel" />
-      <SkeletonBlock className="panel skeleton-panel" />
-      <SkeletonBlock className="panel skeleton-panel" />
+      <div className="two-column-grid">
+        <SkeletonBlock className="h-[360px]" />
+        <SkeletonBlock className="h-[360px]" />
+      </div>
+
+      <div className="two-column-grid">
+        <SkeletonBlock className="h-[320px]" />
+        <SkeletonBlock className="h-[320px]" />
+      </div>
     </div>
   );
 }
 
 export function SplitPageSkeleton() {
   return (
-    <div className="page-grid page-grid--wide">
-      <section className="panel skeleton-panel skeleton-panel--form" />
-      <section className="panel skeleton-panel skeleton-panel--result" />
+    <div className="page-grid-wide">
+      <SkeletonBlock className="min-h-[680px]" />
+      <SkeletonBlock className="min-h-[680px]" />
     </div>
   );
 }
 
 export function ListPageSkeleton({ items = 4 }) {
   return (
-    <div className="history-list">
+    <div className="page-grid">
       {Array.from({ length: items }).map((_, index) => (
-        <article key={index} className="history-card history-card--skeleton">
-          <SkeletonBlock className="skeleton-title" />
-          <SkeletonBlock className="skeleton-line" />
-          <div className="history-card__metrics">
-            <SkeletonBlock className="skeleton-card skeleton-card--chip" />
-            <SkeletonBlock className="skeleton-card skeleton-card--chip" />
-            <SkeletonBlock className="skeleton-card skeleton-card--chip" />
-            <SkeletonBlock className="skeleton-card skeleton-card--chip" />
+        <article key={index} className="surface-card space-y-5">
+          <SkeletonBlock className="h-7 w-1/2" />
+          <SkeletonBlock className="h-5 w-3/4" />
+          <div className="four-column-grid">
+            <SkeletonBlock className="h-20" />
+            <SkeletonBlock className="h-20" />
+            <SkeletonBlock className="h-20" />
+            <SkeletonBlock className="h-20" />
           </div>
+          <SkeletonBlock className="h-16" />
         </article>
       ))}
     </div>
@@ -64,10 +67,10 @@ export function ListPageSkeleton({ items = 4 }) {
 
 export function TableSkeleton({ rows = 6 }) {
   return (
-    <div className="table-skeleton">
-      <SkeletonBlock className="skeleton-line" />
+    <div className="space-y-3">
+      <SkeletonBlock className="h-6 w-40" />
       {Array.from({ length: rows }).map((_, index) => (
-        <SkeletonBlock key={index} className="skeleton-row" />
+        <SkeletonBlock key={index} className="h-14" />
       ))}
     </div>
   );

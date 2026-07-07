@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import sys
 
 from load_fever import load_dataset as load_fever_dataset
 from load_kaggle_fake_real import load_dataset as load_kaggle_dataset
@@ -32,6 +33,7 @@ def merge_available_datasets() -> dict[str, object]:
     ensure_directories()
     generated_at = now_utc_iso()
     dataset_reports: dict[str, object] = {}
+    found_datasets: list[dict[str, object]] = []
     merged_records: list[dict[str, str]] = []
     available_datasets: list[str] = []
     source_files = []
@@ -57,6 +59,14 @@ def merge_available_datasets() -> dict[str, object]:
         write_csv_rows(processed_file, cleaned_records)
         dataset_reports[dataset_name] = report
         available_datasets.append(dataset_name)
+        found_datasets.append(
+            {
+                "dataset_name": dataset_name,
+                "source_files": [relative_to_root(path) for path in bundle.source_files],
+                "raw_rows_loaded": bundle.raw_row_count,
+                "rows_after_cleaning": len(cleaned_records),
+            }
+        )
         merged_records.extend(cleaned_records)
         raw_row_count += bundle.raw_row_count
         source_files.extend(bundle.source_files)
@@ -75,6 +85,7 @@ def merge_available_datasets() -> dict[str, object]:
                 for name, spec in DATASET_EXPECTATIONS.items()
             },
             "datasets": dataset_reports,
+            "found_datasets": found_datasets,
             "final_dataset": None,
         }
         write_json(DATASET_REPORT_PATH, report)
@@ -99,11 +110,13 @@ def merge_available_datasets() -> dict[str, object]:
         "status": "ready",
         "available_datasets": available_datasets,
         "missing_datasets": sorted(set(LOADERS).difference(available_datasets)),
+        "found_datasets": found_datasets,
         "expected_datasets": {
             name: {
                 "description": spec["description"],
                 "source_url": spec["source_url"],
-                "expected_files": [relative_to_root(path) for path in spec["files"]],
+                "expected_files": [relative_to_root(path) for path in spec["files"]]
+                + [relative_to_root(path) for path in spec.get("fallback_files", [])],
                 "processed_file": relative_to_root(spec["processed_file"]),
             }
             for name, spec in DATASET_EXPECTATIONS.items()
@@ -120,10 +133,28 @@ def merge_available_datasets() -> dict[str, object]:
     return payload
 
 
+def print_found_dataset_summary(payload: dict[str, object]) -> None:
+    found_datasets = payload.get("found_datasets", [])
+
+    if not found_datasets:
+        print("Found datasets: none", file=sys.stderr)
+        return
+
+    print("Found datasets:", file=sys.stderr)
+
+    for item in found_datasets:
+        print(
+            f"- {item['dataset_name']}: loaded {item['raw_rows_loaded']} raw row(s), kept {item['rows_after_cleaning']} row(s) after cleaning, files={', '.join(item['source_files'])}",
+            file=sys.stderr,
+        )
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description="Normalize, validate, and merge supported fake-news datasets.")
     parser.parse_args()
-    print(json.dumps(merge_available_datasets()))
+    payload = merge_available_datasets()
+    print_found_dataset_summary(payload)
+    print(json.dumps(payload))
 
 
 if __name__ == "__main__":
