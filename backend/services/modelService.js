@@ -2,6 +2,8 @@ import { spawn } from "child_process";
 import { readFile } from "fs/promises";
 import path from "path";
 import { readDatabase } from "../database.js";
+import { isDatabaseEnabled } from "../config/database.js";
+import { MetricsRepository } from "../repositories/MetricsRepository.js";
 import { formatDateTime } from "../utils/date.js";
 import { clampConfidence, getRiskLevel, normalizeResultLabel } from "../utils/labels.js";
 import { resolvePythonInvocation } from "../utils/pythonCommand.js";
@@ -11,6 +13,7 @@ import { getHostname, isTrustedSource } from "./articleFetchService.js";
 const modelMetricsPaths = [path.resolve("ml", "metrics", "metrics.json"), path.resolve("backend", "models", "model_metrics.json")];
 const predictionScriptPath = path.resolve("ml", "predict.py");
 const trainingScriptPath = path.resolve("ml", "train_models.py");
+const metricsRepository = new MetricsRepository();
 
 const fakePatterns = [
   /\b(shocking|hoax|miracle|secret|exposed|conspiracy|cover[- ]?up)\b/i,
@@ -334,6 +337,15 @@ export async function getModelMetrics() {
 
 export async function retrainModels() {
   const result = await runPythonJsonScript(trainingScriptPath);
+  if (isDatabaseEnabled()) {
+    await metricsRepository.saveModelMetrics(result);
+    await metricsRepository.createTrainingJob({
+      status: "completed",
+      startedAt: new Date(),
+      finishedAt: new Date(),
+      details: result,
+    });
+  }
   return {
     ...result,
     threshold: getConfidenceThreshold(),
@@ -346,7 +358,7 @@ export async function getHealthStatus() {
 
   return {
     status: "ok",
-    database: process.env.DB_CLIENT === "mysql" ? "mysql" : "json",
+    database: isDatabaseEnabled() ? "mysql" : "json",
     articles: database.articles.length,
     analyses: database.analyses.length,
     modelStatus: modelMetrics.status || "trained",

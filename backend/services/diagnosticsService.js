@@ -2,6 +2,7 @@ import fs from "fs/promises";
 import os from "os";
 import path from "path";
 import { readDatabase } from "../database.js";
+import { isDatabaseEnabled } from "../config/database.js";
 import { getModelMetrics } from "./modelService.js";
 
 const modelArtifactPaths = [path.resolve("ml", "models", "best_model.pkl"), path.resolve("backend", "models", "best_model.joblib")];
@@ -62,7 +63,9 @@ export async function getSystemDiagnostics() {
       heapUsedMb: Math.round(memory.heapUsed / 1024 / 1024),
     },
     configuration: {
-      dbClient: process.env.DB_CLIENT || "json",
+      dbEnabled: isDatabaseEnabled(),
+      dbClient: isDatabaseEnabled() ? "mysql" : "json",
+      dbName: process.env.DB_NAME || "fake_news_ai",
       port: Number(process.env.PORT || 4000),
       confidenceThreshold: Number(process.env.CONFIDENCE_THRESHOLD || 0.72),
       mlWeight: Number(process.env.ML_WEIGHT || 0.68),

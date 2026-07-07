@@ -6,7 +6,10 @@
   "scripts": {
     "backend": "node backend/server.js",
     "seed": "node backend/seed-database.js",
-    "seed:mysql": "node backend/seed-mysql.js",
+    "db:migrate": "node backend/database/migrate.js",
+    "db:seed": "node backend/database/seed.js",
+    "db:setup": "npm run db:migrate && npm run db:seed",
+    "seed:mysql": "npm run db:seed",
     "merge:datasets": "node ml/run-python.js ml/merge_datasets.py",
     "train:models": "node ml/run-python.js ml/train_models.py",
     "evaluate:models": "node ml/run-python.js ml/evaluate_models.py",

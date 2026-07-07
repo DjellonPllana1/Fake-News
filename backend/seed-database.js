@@ -1,6 +1,9 @@
 import fs from "fs/promises";
 import path from "path";
-import { createEmptyDatabase, writeDatabase } from "./database.js";
+
+process.env.DB_ENABLED = "false";
+
+const { createEmptyDatabase, writeDatabase } = await import("./database.js");
 
 const trueCsvPath = process.argv[2] || "C:/tmp/fake-news-seed-true/True.csv";
 const fakeCsvPath = process.argv[3] || "C:/tmp/fake-news-seed-fake/Fake.csv";

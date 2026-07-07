@@ -1,20 +1,23 @@
-import fs from "fs/promises";
+import { readFile } from "fs/promises";
 import path from "path";
-import mysql from "mysql2/promise";
-import "../env.js";
+import { getDatabaseConfig, getPool, isDatabaseEnabled, mysql } from "../config/database.js";
+import { readJsonDatabase, writeJsonDatabase, databaseFile } from "../database/jsonStore.js";
+import { AnalysisRepository } from "../repositories/AnalysisRepository.js";
+import { HistoryRepository } from "../repositories/HistoryRepository.js";
+import { UserRepository } from "../repositories/UserRepository.js";
 import { formatDateTime, timeAgo } from "../utils/date.js";
 import { clampConfidence, getRiskLevel, normalizeResultLabel } from "../utils/labels.js";
 import { getSourceReputation } from "./sourceReputationService.js";
 
-export const databaseFile = path.resolve("backend", "database.json");
-const useMysql = process.env.DB_CLIENT === "mysql";
-let pool;
+export { databaseFile };
+
+const userRepository = new UserRepository();
+const analysisRepository = new AnalysisRepository();
+const historyRepository = new HistoryRepository();
 
 const starterUsers = [
-  { name: "Arta Krasniqi", email: "arta@demo.com", role: "Admin", status: "Active", passwordHash: "ef92b778bafe771e89245b89ecbc08a44a4e166c06659911881f383d4473e94f" },
-  { name: "Liridon Gashi", email: "liridon@demo.com", role: "Analyst", status: "Active", passwordHash: "ef92b778bafe771e89245b89ecbc08a44a4e166c06659911881f383d4473e94f" },
-  { name: "Bora Shala", email: "bora@demo.com", role: "User", status: "Inactive", passwordHash: "ef92b778bafe771e89245b89ecbc08a44a4e166c06659911881f383d4473e94f" },
-  { name: "Dion Pllana", email: "dion@demo.com", role: "Admin", status: "Active", passwordHash: "ef92b778bafe771e89245b89ecbc08a44a4e166c06659911881f383d4473e94f" },
+  { name: "Admin User", email: "admin@demo.com", role: "Admin", status: "Active", passwordHash: "ef92b778bafe771e89245b89ecbc08a44a4e166c06659911881f383d4473e94f" },
+  { name: "Demo User", email: "demo@demo.com", role: "Analyst", status: "Active", passwordHash: "ef92b778bafe771e89245b89ecbc08a44a4e166c06659911881f383d4473e94f" },
 ];
 
 const starterNotifications = [
@@ -22,26 +25,13 @@ const starterNotifications = [
   { id: 2, title: "Model pipeline updated", text: "TF-IDF model comparison is available in the metrics dashboard.", time: "10 min ago", unread: false },
 ];
 
-function safeJsonParse(value, fallback = null) {
-  if (!value) {
-    return fallback;
-  }
-
-  try {
-    return typeof value === "string" ? JSON.parse(value) : value;
-  } catch {
-    return fallback;
-  }
-}
-
 function normalizeUser(user = {}) {
-  const fallback = starterUsers.find((item) => item.email === user.email);
   return {
-    name: user.name || fallback?.name || "Unknown User",
-    email: user.email || fallback?.email || "",
-    role: user.role || fallback?.role || "User",
-    status: user.status || fallback?.status || "Active",
-    passwordHash: user.passwordHash || user.password_hash || fallback?.passwordHash || "",
+    name: user.name || "Unknown User",
+    email: user.email || "",
+    role: user.role || "User",
+    status: user.status || "Active",
+    passwordHash: user.passwordHash || user.password_hash || "",
   };
 }
 
@@ -72,25 +62,20 @@ function inferTrustLevel(score) {
   const highThreshold = Number(process.env.TRUST_SCORE_HIGH_THRESHOLD || 75);
   const mediumThreshold = Number(process.env.TRUST_SCORE_MEDIUM_THRESHOLD || 55);
 
-  if (value >= highThreshold) {
-    return "High credibility";
-  }
-
-  if (value >= mediumThreshold) {
-    return "Moderate credibility";
-  }
-
+  if (value >= highThreshold) return "High credibility";
+  if (value >= mediumThreshold) return "Moderate credibility";
   return "Low credibility";
 }
 
 function normalizeAnalysis(item = {}, index = 0) {
-  const label = normalizeResultLabel(item.label);
+  const label = normalizeResultLabel(item.label || item.prediction);
   const confidence = Math.min(100, Math.max(0, Math.round(Number(item.confidence ?? Number(item.confidenceScore || 0) * 100) || 0)));
   const confidenceScore = clampConfidence(item.confidenceScore ?? confidence / 100);
   const trustScore = Number(item.trustScore || item.credibilityScore || item.credibility?.score || 0) || 0;
   const sourceReputation = item.sourceReputation || getSourceReputation(item.url || item.source);
 
   return {
+    ...item,
     id: item.id || `AN-${Date.now()}-${index + 1}`,
     title: String(item.title || "Untitled Article").trim(),
     source: String(item.source || "Manual input").trim(),
@@ -100,7 +85,7 @@ function normalizeAnalysis(item = {}, index = 0) {
     confidence,
     confidenceScore,
     model: String(item.model || "Unknown model").trim(),
-    date: String(item.date || formatDateTime()).slice(0, 16),
+    date: String(item.date || item.analyzed_at || formatDateTime()).replace("T", " ").slice(0, 16),
     language: String(item.language || item.languageInfo?.name || "English").trim(),
     languageInfo: item.languageInfo || {
       code: item.language ? String(item.language).slice(0, 2).toLowerCase() : "unknown",
@@ -113,7 +98,7 @@ function normalizeAnalysis(item = {}, index = 0) {
     explanation: String(item.explanation || "").trim(),
     recommendation: String(item.recommendation || "").trim(),
     summary: String(item.summary || "").trim(),
-    keywords: Array.isArray(item.keywords) ? item.keywords : Array.isArray(item.explanationKeywords) ? item.explanationKeywords : [],
+    keywords: Array.isArray(item.keywords) ? item.keywords : [],
     keywordMetadata: item.keywordMetadata || item.nlpMetadata?.keywordExtraction || null,
     influentialKeywords: Array.isArray(item.influentialKeywords) ? item.influentialKeywords : [],
     probabilities: item.probabilities || null,
@@ -168,7 +153,7 @@ export function createEmptyDatabase() {
   return {
     meta: {
       name: "Fake News Detection Local Database",
-      version: 2,
+      version: 3,
       seededAt: null,
       lastAnalysisAt: null,
     },
@@ -189,137 +174,54 @@ function normalizeDatabase(database = {}) {
     },
     articles: (database.articles || []).map(normalizeArticle),
     analyses: (database.analyses || []).map(normalizeAnalysis),
-    users: (database.users || starterUsers).map(normalizeUser),
-    notifications: (database.notifications || starterNotifications).map(normalizeNotification),
+    users: (database.users?.length ? database.users : starterUsers).map(normalizeUser),
+    notifications: (database.notifications?.length ? database.notifications : starterNotifications).map(normalizeNotification),
   };
 }
 
-function getPool() {
-  if (!pool) {
-    pool = mysql.createPool({
-      host: process.env.DB_HOST || "localhost",
-      port: Number(process.env.DB_PORT || 3306),
-      user: process.env.DB_USER || "root",
-      password: process.env.DB_PASSWORD || "",
-      database: process.env.DB_NAME || "fake_news_ui",
-      waitForConnections: true,
-      connectionLimit: 10,
-      multipleStatements: true,
-    });
-  }
-
-  return pool;
-}
-
-export async function ensureDatabaseSchema() {
-  if (!useMysql) {
-    return;
-  }
-
-  const db = getPool();
-  const statements = [
-    "ALTER TABLE articles MODIFY label VARCHAR(40) NOT NULL",
-    "ALTER TABLE analyses MODIFY label VARCHAR(40) NOT NULL",
-    "ALTER TABLE analyses ADD COLUMN IF NOT EXISTS url VARCHAR(700) NULL AFTER source",
-    "ALTER TABLE analyses ADD COLUMN IF NOT EXISTS risk_level VARCHAR(30) NULL AFTER model",
-    "ALTER TABLE analyses ADD COLUMN IF NOT EXISTS details_json JSON NULL AFTER article_id",
-  ];
-
-  for (const statement of statements) {
-    try {
-      await db.query(statement);
-    } catch (error) {
-      if (process.env.DEBUG_DB === "1") {
-        console.warn(`Schema update skipped: ${statement}`, error.message);
-      }
-    }
-  }
-}
-
 async function readMysqlDatabase() {
-  const db = getPool();
-  const [articles] = await db.query("SELECT id, title, text, subject, source, label, published_date FROM articles ORDER BY published_date DESC, id DESC LIMIT 3000");
-  const [analyses] = await db.query("SELECT id, title, source, url, label, confidence, model, risk_level, analyzed_at, language, article_id, details_json FROM analyses ORDER BY analyzed_at DESC LIMIT 500");
-  const [users] = await db.query("SELECT name, email, role, status, password_hash FROM users ORDER BY name");
-  const [notifications] = await db.query("SELECT id, title, message, time_label, unread FROM notifications ORDER BY id DESC LIMIT 20");
+  const [articles, analyses, users, notifications] = await Promise.all([
+    historyRepository.listArticles({ limit: 3000 }),
+    analysisRepository.list({ limit: 500 }),
+    userRepository.list(),
+    historyRepository.listNotifications({ limit: 20 }),
+  ]);
 
   return normalizeDatabase({
     meta: {
       name: "Fake News Detection MySQL Database",
-      version: 2,
+      version: 3,
+      lastAnalysisAt: analyses[0]?.date || null,
     },
-    articles: articles.map((row) => ({
-      id: row.id,
-      title: row.title,
-      text: row.text,
-      subject: row.subject,
-      source: row.source,
-      label: row.label,
-      date: row.published_date,
-    })),
-    analyses: analyses.map((row) => {
-      const details = safeJsonParse(row.details_json, {}) || {};
-      return {
-        ...details,
-        id: row.id,
-        title: row.title,
-        source: row.source,
-        url: row.url,
-        label: row.label,
-        confidence: row.confidence,
-        model: row.model,
-        riskLevel: row.risk_level,
-        date: row.analyzed_at ? formatDateTime(row.analyzed_at) : formatDateTime(),
-        language: row.language,
-        articleId: row.article_id,
-      };
-    }),
-    users: users.map((row) => ({
-      name: row.name,
-      email: row.email,
-      role: row.role,
-      status: row.status,
-      passwordHash: row.password_hash,
-    })),
-    notifications: notifications.map((row) => ({
-      id: row.id,
-      title: row.title,
-      text: row.message,
-      time: row.time_label,
-      unread: Boolean(row.unread),
-    })),
+    articles,
+    analyses,
+    users,
+    notifications,
   });
 }
 
 export async function readDatabase() {
-  if (useMysql) {
+  if (isDatabaseEnabled()) {
     return readMysqlDatabase();
   }
 
-  try {
-    const content = await fs.readFile(databaseFile, "utf8");
-    return normalizeDatabase(JSON.parse(content));
-  } catch {
-    const database = createEmptyDatabase();
-    await writeDatabase(database);
-    return database;
-  }
+  const database = await readJsonDatabase(createEmptyDatabase);
+  return normalizeDatabase(database);
 }
 
 export async function writeDatabase(database) {
-  if (useMysql) {
+  if (isDatabaseEnabled()) {
     return;
   }
 
-  await fs.mkdir(path.dirname(databaseFile), { recursive: true });
-  await fs.writeFile(databaseFile, JSON.stringify(normalizeDatabase(database), null, 2), "utf8");
+  await writeJsonDatabase(normalizeDatabase(database));
 }
 
 export async function saveAnalysis(item, notification) {
   const analysis = normalizeAnalysis(item);
   const normalizedNotification = normalizeNotification(notification);
 
-  if (!useMysql) {
+  if (!isDatabaseEnabled()) {
     const database = await readDatabase();
     database.meta.lastAnalysisAt = analysis.date;
     database.analyses.unshift(analysis);
@@ -330,98 +232,8 @@ export async function saveAnalysis(item, notification) {
     return analysis;
   }
 
-  const db = getPool();
-  const detailsJson = JSON.stringify({
-    confidenceScore: analysis.confidenceScore,
-    explanation: analysis.explanation,
-    recommendation: analysis.recommendation,
-    summary: analysis.summary,
-    keywords: analysis.keywords,
-    keywordMetadata: analysis.keywordMetadata,
-    influentialKeywords: analysis.influentialKeywords,
-    probabilities: analysis.probabilities,
-    modelProbabilities: analysis.modelProbabilities,
-    binaryModelProbabilities: analysis.binaryModelProbabilities,
-    warning: analysis.warning,
-    articleText: analysis.articleText,
-    textPreview: analysis.textPreview,
-    author: analysis.author,
-    publishedAt: analysis.publishedAt,
-    credibilityScore: analysis.credibilityScore,
-    baseCredibilityScore: analysis.baseCredibilityScore,
-    evidenceAdjustedCredibilityScore: analysis.evidenceAdjustedCredibilityScore,
-    trustScore: analysis.trustScore,
-    trustLevel: analysis.trustLevel,
-    trustExplanation: analysis.trustExplanation,
-    trustReasons: analysis.trustReasons,
-    trustSignals: analysis.trustSignals,
-    trustWeights: analysis.trustWeights,
-    sourceReputation: analysis.sourceReputation,
-    modelVersion: analysis.modelVersion,
-    modelGeneratedAt: analysis.modelGeneratedAt,
-    suspiciousSentences: analysis.suspiciousSentences,
-    ruleFindings: analysis.ruleFindings,
-    sentiment: analysis.sentiment,
-    entities: analysis.entities,
-    languageInfo: analysis.languageInfo,
-    topicDetection: analysis.topicDetection,
-    articleCategory: analysis.articleCategory,
-    readingComplexity: analysis.readingComplexity,
-    writingStyle: analysis.writingStyle,
-    emotion: analysis.emotion,
-    nlpMetadata: analysis.nlpMetadata,
-    articleStats: analysis.articleStats,
-    credibility: analysis.credibility,
-    evidence: analysis.evidence,
-    claimAnalyses: analysis.claimAnalyses,
-    mainClaims: analysis.mainClaims,
-    trustedSourcesFound: analysis.trustedSourcesFound,
-    supportingArticlesCount: analysis.supportingArticlesCount,
-    contradictingArticlesCount: analysis.contradictingArticlesCount,
-    supportedClaimsCount: analysis.supportedClaimsCount,
-    contradictedClaimsCount: analysis.contradictedClaimsCount,
-    unverifiedClaimsCount: analysis.unverifiedClaimsCount,
-    similarityScore: analysis.similarityScore,
-    evidenceConfidence: analysis.evidenceConfidence,
-    evidenceVerdict: analysis.evidenceVerdict,
-  });
-
-  await db.execute(
-    `INSERT INTO analyses (id, title, source, url, label, confidence, model, risk_level, analyzed_at, language, article_id, details_json)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-     ON DUPLICATE KEY UPDATE
-       title = VALUES(title),
-       source = VALUES(source),
-       url = VALUES(url),
-       label = VALUES(label),
-       confidence = VALUES(confidence),
-       model = VALUES(model),
-       risk_level = VALUES(risk_level),
-       analyzed_at = VALUES(analyzed_at),
-       language = VALUES(language),
-       article_id = VALUES(article_id),
-       details_json = VALUES(details_json)`,
-    [
-      analysis.id,
-      analysis.title,
-      analysis.source,
-      analysis.url || null,
-      analysis.label,
-      analysis.confidence,
-      analysis.model,
-      analysis.riskLevel,
-      new Date(analysis.date.replace(" ", "T")),
-      analysis.language,
-      analysis.articleId,
-      detailsJson,
-    ]
-  );
-
-  await db.execute(
-    "INSERT INTO notifications (title, message, time_label, unread) VALUES (?, ?, ?, ?)",
-    [normalizedNotification.title, normalizedNotification.text, normalizedNotification.time, normalizedNotification.unread ? 1 : 0]
-  );
-
+  await analysisRepository.save(analysis);
+  await historyRepository.addNotification(normalizedNotification);
   return analysis;
 }
 
@@ -432,13 +244,11 @@ export async function updateUserByEmail(email, updates = {}) {
     return null;
   }
 
-  if (!useMysql) {
+  if (!isDatabaseEnabled()) {
     const database = await readDatabase();
     const index = database.users.findIndex((user) => user.email.toLowerCase() === normalizedEmail);
 
-    if (index === -1) {
-      return null;
-    }
+    if (index === -1) return null;
 
     const current = database.users[index];
     const next = normalizeUser({
@@ -450,27 +260,10 @@ export async function updateUserByEmail(email, updates = {}) {
 
     database.users[index] = next;
     await writeDatabase(database);
-    return normalizeUser(next);
+    return next;
   }
 
-  const db = getPool();
-  const [rows] = await db.query("SELECT name, email, role, status, password_hash FROM users WHERE LOWER(email) = ? LIMIT 1", [normalizedEmail]);
-  const existing = Array.isArray(rows) ? rows[0] : null;
-
-  if (!existing) {
-    return null;
-  }
-
-  const next = normalizeUser({
-    name: updates.name ?? existing.name,
-    email: existing.email,
-    role: updates.role ?? existing.role,
-    status: updates.status ?? existing.status,
-    passwordHash: existing.password_hash,
-  });
-
-  await db.execute("UPDATE users SET name = ?, role = ?, status = ? WHERE email = ?", [next.name, next.role, next.status, next.email]);
-  return next;
+  return userRepository.updateByEmail(normalizedEmail, updates);
 }
 
 export async function deleteAnalysisById(analysisId) {
@@ -480,13 +273,11 @@ export async function deleteAnalysisById(analysisId) {
     return false;
   }
 
-  if (!useMysql) {
+  if (!isDatabaseEnabled()) {
     const database = await readDatabase();
     const nextAnalyses = database.analyses.filter((item) => item.id !== normalizedId);
 
-    if (nextAnalyses.length === database.analyses.length) {
-      return false;
-    }
+    if (nextAnalyses.length === database.analyses.length) return false;
 
     database.analyses = nextAnalyses;
     database.meta.lastAnalysisAt = nextAnalyses[0]?.date || null;
@@ -494,9 +285,7 @@ export async function deleteAnalysisById(analysisId) {
     return true;
   }
 
-  const db = getPool();
-  const [result] = await db.execute("DELETE FROM analyses WHERE id = ?", [normalizedId]);
-  return Boolean(result?.affectedRows);
+  return analysisRepository.deleteById(normalizedId);
 }
 
 export async function deleteArticleById(articleId) {
@@ -506,22 +295,18 @@ export async function deleteArticleById(articleId) {
     return false;
   }
 
-  if (!useMysql) {
+  if (!isDatabaseEnabled()) {
     const database = await readDatabase();
     const nextArticles = database.articles.filter((item) => item.id !== normalizedId);
 
-    if (nextArticles.length === database.articles.length) {
-      return false;
-    }
+    if (nextArticles.length === database.articles.length) return false;
 
     database.articles = nextArticles;
     await writeDatabase(database);
     return true;
   }
 
-  const db = getPool();
-  const [result] = await db.execute("DELETE FROM articles WHERE id = ?", [normalizedId]);
-  return Boolean(result?.affectedRows);
+  return historyRepository.deleteArticleById(normalizedId);
 }
 
 export async function findUserByEmail(email) {
@@ -529,6 +314,11 @@ export async function findUserByEmail(email) {
 
   if (!normalizedEmail) {
     return null;
+  }
+
+  if (isDatabaseEnabled()) {
+    const user = await userRepository.findByEmail(normalizedEmail);
+    return user ? normalizeUser(user) : null;
   }
 
   const database = await readDatabase();
@@ -541,4 +331,22 @@ export function toAnalysisRow(item) {
     ...analysis,
     timeAgo: timeAgo(analysis.date),
   };
+}
+
+export async function ensureDatabaseSchema() {
+  if (!isDatabaseEnabled()) {
+    return;
+  }
+
+  const schemaPath = path.resolve("backend", "database", "schema.sql");
+  const schema = (await readFile(schemaPath, "utf8")).replaceAll("`fake_news_ai`", `\`${process.env.DB_NAME || "fake_news_ai"}\``);
+  const connection = await mysql.createConnection(getDatabaseConfig({ includeDatabase: false }));
+
+  try {
+    await connection.query(schema);
+  } finally {
+    await connection.end();
+  }
+
+  await getPool().query("SELECT 1");
 }
