@@ -1,4 +1,4 @@
-import { exportAnalysisPdf, exportHistoryCsv, exportHistoryPdf } from "../services/exportService.js";
+import { exportAnalysisCsv, exportAnalysisJson, exportAnalysisPdf, exportHistoryCsv, exportHistoryJson, exportHistoryPdf } from "../services/exportService.js";
 import { AppError } from "../utils/appError.js";
 import { validateHistoryQuery } from "../utils/validation.js";
 
@@ -24,6 +24,15 @@ export async function downloadHistoryPdf(req, res) {
   return res.status(200).send(content);
 }
 
+export async function downloadHistoryJson(req, res) {
+  const filters = validateHistoryQuery(req.query);
+  const content = await exportHistoryJson(filters);
+
+  res.setHeader("Content-Type", "application/json; charset=utf-8");
+  res.setHeader("Content-Disposition", `attachment; filename="verity-lens-history-${timestampSlug()}.json"`);
+  return res.status(200).send(content);
+}
+
 export async function downloadAnalysisPdf(req, res) {
   const content = await exportAnalysisPdf(req.params.analysisId);
 
@@ -33,5 +42,29 @@ export async function downloadAnalysisPdf(req, res) {
 
   res.setHeader("Content-Type", "application/pdf");
   res.setHeader("Content-Disposition", `attachment; filename="article-analysis-${req.params.analysisId}.pdf"`);
+  return res.status(200).send(content);
+}
+
+export async function downloadAnalysisCsv(req, res) {
+  const content = await exportAnalysisCsv(req.params.analysisId);
+
+  if (!content) {
+    throw new AppError("Analysis report not found.", 404, "ANALYSIS_REPORT_NOT_FOUND");
+  }
+
+  res.setHeader("Content-Type", "text/csv; charset=utf-8");
+  res.setHeader("Content-Disposition", `attachment; filename="article-analysis-${req.params.analysisId}.csv"`);
+  return res.status(200).send(content);
+}
+
+export async function downloadAnalysisJson(req, res) {
+  const content = await exportAnalysisJson(req.params.analysisId);
+
+  if (!content) {
+    throw new AppError("Analysis report not found.", 404, "ANALYSIS_REPORT_NOT_FOUND");
+  }
+
+  res.setHeader("Content-Type", "application/json; charset=utf-8");
+  res.setHeader("Content-Disposition", `attachment; filename="article-analysis-${req.params.analysisId}.json"`);
   return res.status(200).send(content);
 }

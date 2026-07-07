@@ -121,6 +121,9 @@ export const api = {
   getAdminConfiguration: () => request("/api/admin/configuration"),
   updateAdminConfiguration: (body) => request("/api/admin/configuration", { method: "PATCH", body }),
   downloadHistoryCsv: (params) => download(`/api/history/export.csv${buildQueryString(params)}`, "verity-lens-history.csv"),
+  downloadHistoryJson: (params) => download(`/api/history/export.json${buildQueryString(params)}`, "verity-lens-history.json"),
   downloadHistoryPdf: (params) => download(`/api/history/export.pdf${buildQueryString(params)}`, "verity-lens-history.pdf"),
+  downloadAnalysisCsv: (analysisId) => download(`/api/history/${analysisId}/export.csv`, `article-analysis-${analysisId}.csv`),
+  downloadAnalysisJson: (analysisId) => download(`/api/history/${analysisId}/export.json`, `article-analysis-${analysisId}.json`),
   downloadAnalysisPdf: (analysisId) => download(`/api/history/${analysisId}/export.pdf`, `article-analysis-${analysisId}.pdf`),
 };

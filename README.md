@@ -62,7 +62,7 @@ Verity Lens is a production-style AI fake news detection platform built with Rea
   - Linear SVM
 - Automatic best-model selection and saved artifact/version metadata
 - Configurable `UNCERTAIN` threshold through `.env`
-- Searchable history with PDF and CSV export
+- Searchable history with PDF, CSV, and JSON export
 - Executive dashboard analytics with live statistics, animated counters, prediction mix, confidence distribution, timelines, model comparison, suspicious keywords, domain analytics, entity trends, weekly/monthly rollups, recent activity, model version, and system status
 - System diagnostics page and health endpoint
 - JSON fallback database with optional MySQL persistence
@@ -96,7 +96,7 @@ src/
 - `backend/services/analysisService.js`
   Orchestrates fetch, prediction, explainability, and history persistence.
 - `backend/services/exportService.js`
-  Generates CSV and PDF exports.
+  Generates CSV, JSON, and branded PDF exports.
 - `backend/services/diagnosticsService.js`
   Collects runtime, configuration, storage, and model diagnostics.
 
@@ -107,7 +107,10 @@ src/
 - `POST /api/fetch-url`
 - `GET /api/history`
 - `GET /api/history/export.csv`
+- `GET /api/history/export.json`
 - `GET /api/history/export.pdf`
+- `GET /api/history/:analysisId/export.csv`
+- `GET /api/history/:analysisId/export.json`
 - `GET /api/history/:analysisId/export.pdf`
 - `GET /api/dashboard`
 - `GET /api/model-metrics`
@@ -180,6 +183,19 @@ npm run dev
 - Frontend: `http://localhost:5173`
 - Backend: `http://localhost:4000`
 
+## Production Deployment
+
+Production deployment assets are included in the repository:
+
+- `Dockerfile.backend`
+- `Dockerfile.frontend`
+- `docker-compose.yml`
+- `nginx/default.conf`
+- `.env.production.example`
+- `.github/workflows/ci.yml`
+
+See [DEPLOYMENT.md](./DEPLOYMENT.md) for the full deployment guide.
+
 ## Demo Login
 
 - Email: `dion@demo.com`
@@ -196,6 +212,10 @@ npm run dev
 - `npm run train:models`
 - `npm run evaluate:models`
 - `npm run train:nb`
+- `npm run docker:build`
+- `npm run docker:up`
+- `npm run docker:down`
+- `npm run docker:logs`
 
 ## Training and Evaluation
 
@@ -300,13 +320,27 @@ Subdomains are matched automatically, so adding `reuters.com` also covers `www.r
 
 1. Open `History`.
 2. Click `Export CSV`.
-3. Confirm a CSV download starts and includes Trust Score, Trust Level, and Trust Reasons columns.
+3. Confirm a CSV download starts and includes Trust Score, Trust Level, keywords, evidence fields, and model metadata columns.
+
+### JSON export
+
+1. Open `History`.
+2. Click `Export JSON` for the filtered history report or a single analysis card.
+3. Confirm the JSON file includes report metadata, analysis or history payloads, chart-ready data, and system information.
 
 ### PDF export
 
 1. Open `History`.
 2. Click `Export PDF` for the filtered history report.
-3. Click `Export PDF` on a single history card for an article report and confirm trust summary sections are included.
+3. Click `Export PDF` on a single history card for an article report and confirm the PDF includes article text, prediction, confidence, Trust Score, evidence, keywords, entities, summary, charts, date, model version, and system information.
+
+### Production stack
+
+1. Copy `.env.production.example` to `.env.production`.
+2. Start the stack with `docker compose --env-file .env.production up -d --build`.
+3. Open `http://localhost:8080`.
+4. Confirm `http://localhost:8080/healthz` returns `ok`.
+5. Confirm `http://localhost:8080/api/health` returns a healthy JSON response.
 
 ### Dashboard
 

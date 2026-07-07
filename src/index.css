@@ -581,7 +581,24 @@ h3 {
   display: flex;
   gap: 1rem;
   flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
   margin-top: 1rem;
+}
+
+.result-card__footer-meta,
+.result-card__actions,
+.history-card__footer-meta,
+.history-card__actions {
+  display: flex;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.result-card__actions,
+.history-card__actions {
+  justify-content: flex-end;
 }
 
 .tag-list {

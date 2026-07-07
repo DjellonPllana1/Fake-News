@@ -74,6 +74,9 @@ export function HistoryPage({ refreshToken }) {
           <button type="button" className="secondary-button" onClick={() => api.downloadHistoryCsv(filters)}>
             Export CSV
           </button>
+          <button type="button" className="secondary-button" onClick={() => api.downloadHistoryJson(filters)}>
+            Export JSON
+          </button>
           <button type="button" className="secondary-button" onClick={() => api.downloadHistoryPdf(filters)}>
             Export PDF
           </button>
@@ -92,55 +95,65 @@ export function HistoryPage({ refreshToken }) {
 
               return (
                 <article key={item.id} className="history-card">
-                <div className="history-card__header">
-                  <div>
-                    <strong>{item.title}</strong>
-                    <span>{item.source}</span>
-                    {hasSourceReputation && item.sourceReputation ? <SourceReputationBadge badge={item.sourceReputation.badge} /> : null}
+                  <div className="history-card__header">
+                    <div>
+                      <strong>{item.title}</strong>
+                      <span>{item.source}</span>
+                      {hasSourceReputation && item.sourceReputation ? <SourceReputationBadge badge={item.sourceReputation.badge} /> : null}
+                    </div>
+                    <span className={`status-badge status-badge--${item.label.toLowerCase()}`}>{item.label}</span>
                   </div>
-                  <span className={`status-badge status-badge--${item.label.toLowerCase()}`}>{item.label}</span>
-                </div>
 
-                <p>{item.summary || item.textPreview || "No summary stored for this analysis."}</p>
+                  <p>{item.summary || item.textPreview || "No summary stored for this analysis."}</p>
 
-                <div className="history-card__metrics">
-                  <span>{item.confidence}% confidence</span>
-                  <span>{item.trustScore || item.credibilityScore || 0}/100 trust score</span>
-                  <span>{item.trustLevel || "Trust level unavailable"}</span>
-                  <span>{item.url || (item.source && item.source !== "Manual input") ? item.sourceReputation?.domain || "Unknown domain" : "No source domain"}</span>
-                  <span>{item.url || (item.source && item.source !== "Manual input") ? `${item.sourceReputation?.reliability || "Unknown"} reliability` : "No source profile"}</span>
-                  <span>{Math.round(Number(item.evidenceConfidence || 0) * 100)}% evidence confidence</span>
-                  <span>{item.evidenceVerdict || "UNVERIFIED"} evidence verdict</span>
-                  <span>{item.sentiment?.label || "neutral"} sentiment</span>
-                  <span>{item.modelVersion || item.model}</span>
-                </div>
-
-                {item.trustExplanation ? <p>{item.trustExplanation}</p> : null}
-                {item.recommendation ? <p>{item.recommendation}</p> : null}
-
-                {item.trustReasons?.length ? (
-                  <div className="tag-list">
-                    {item.trustReasons.slice(0, 4).map((reason) => (
-                      <span key={`${item.id}-${reason}`}>{reason}</span>
-                    ))}
+                  <div className="history-card__metrics">
+                    <span>{item.confidence}% confidence</span>
+                    <span>{item.trustScore || item.credibilityScore || 0}/100 trust score</span>
+                    <span>{item.trustLevel || "Trust level unavailable"}</span>
+                    <span>{item.url || (item.source && item.source !== "Manual input") ? item.sourceReputation?.domain || "Unknown domain" : "No source domain"}</span>
+                    <span>{item.url || (item.source && item.source !== "Manual input") ? `${item.sourceReputation?.reliability || "Unknown"} reliability` : "No source profile"}</span>
+                    <span>{Math.round(Number(item.evidenceConfidence || 0) * 100)}% evidence confidence</span>
+                    <span>{item.evidenceVerdict || "UNVERIFIED"} evidence verdict</span>
+                    <span>{item.sentiment?.label || "neutral"} sentiment</span>
+                    <span>{item.modelVersion || item.model}</span>
                   </div>
-                ) : null}
 
-                {item.keywords?.length ? (
-                  <div className="tag-list">
-                    {item.keywords.slice(0, 6).map((keyword) => (
-                      <span key={`${item.id}-${keyword}`}>{keyword}</span>
-                    ))}
+                  {item.trustExplanation ? <p>{item.trustExplanation}</p> : null}
+                  {item.recommendation ? <p>{item.recommendation}</p> : null}
+
+                  {item.trustReasons?.length ? (
+                    <div className="tag-list">
+                      {item.trustReasons.slice(0, 4).map((reason) => (
+                        <span key={`${item.id}-${reason}`}>{reason}</span>
+                      ))}
+                    </div>
+                  ) : null}
+
+                  {item.keywords?.length ? (
+                    <div className="tag-list">
+                      {item.keywords.slice(0, 6).map((keyword) => (
+                        <span key={`${item.id}-${keyword}`}>{keyword}</span>
+                      ))}
+                    </div>
+                  ) : null}
+
+                  <div className="history-card__footer">
+                    <div className="history-card__footer-meta">
+                      <span>{item.model}</span>
+                      <span>{item.date}</span>
+                    </div>
+                    <div className="history-card__actions">
+                      <button type="button" className="ghost-button" onClick={() => api.downloadAnalysisCsv(item.id)}>
+                        Export CSV
+                      </button>
+                      <button type="button" className="ghost-button" onClick={() => api.downloadAnalysisJson(item.id)}>
+                        Export JSON
+                      </button>
+                      <button type="button" className="ghost-button" onClick={() => api.downloadAnalysisPdf(item.id)}>
+                        Export PDF
+                      </button>
+                    </div>
                   </div>
-                ) : null}
-
-                <div className="history-card__footer">
-                  <span>{item.model}</span>
-                  <span>{item.date}</span>
-                  <button type="button" className="ghost-button" onClick={() => api.downloadAnalysisPdf(item.id)}>
-                    Export PDF
-                  </button>
-                </div>
                 </article>
               );
             })}

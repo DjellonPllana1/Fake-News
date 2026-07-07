@@ -1,3 +1,4 @@
+import { api } from "../api";
 import { RESULT_META } from "../constants";
 import { SourceReputationBadge, SourceReputationCard } from "./SourceReputationCard";
 
@@ -702,8 +703,24 @@ export function AnalysisResultCard({ analysis }) {
       </div>
 
       <div className="result-card__footer">
-        <span>Model: {analysis.model}</span>
-        <span>Saved: {analysis.date}</span>
+        <div className="result-card__footer-meta">
+          <span>Model: {analysis.model}</span>
+          <span>Saved: {analysis.date}</span>
+        </div>
+
+        {analysis.id ? (
+          <div className="result-card__actions">
+            <button type="button" className="ghost-button" onClick={() => api.downloadAnalysisCsv(analysis.id)}>
+              Export CSV
+            </button>
+            <button type="button" className="ghost-button" onClick={() => api.downloadAnalysisJson(analysis.id)}>
+              Export JSON
+            </button>
+            <button type="button" className="ghost-button" onClick={() => api.downloadAnalysisPdf(analysis.id)}>
+              Export PDF
+            </button>
+          </div>
+        ) : null}
       </div>
 
       {analysis.warning ? <div className="inline-warning">{analysis.warning}</div> : null}

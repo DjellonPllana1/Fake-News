@@ -182,6 +182,7 @@ export async function analyzeArticle(payload) {
     author: finalAuthor,
     publishedAt: finalPublishedAt,
     warning: [prediction.warning, fetchWarning].filter(Boolean).join(" ").trim(),
+    articleText: finalText,
     textPreview: finalText.slice(0, 320),
   };
 

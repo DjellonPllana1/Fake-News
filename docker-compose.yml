@@ -1,0 +1,54 @@
+services:
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile.backend
+    restart: unless-stopped
+    environment:
+      NODE_ENV: ${NODE_ENV:-production}
+      HOST: ${HOST:-0.0.0.0}
+      CORS_ORIGIN: ${CORS_ORIGIN:-http://localhost:8080}
+      DB_CLIENT: ${DB_CLIENT:-json}
+      DB_HOST: ${DB_HOST:-localhost}
+      DB_PORT: ${DB_PORT:-3306}
+      DB_USER: ${DB_USER:-root}
+      DB_PASSWORD: ${DB_PASSWORD:-root1234}
+      DB_NAME: ${DB_NAME:-fake_news_ui}
+      PORT: ${PORT:-4000}
+      PYTHON_BIN: ${PYTHON_BIN:-python3}
+      CONFIDENCE_THRESHOLD: ${CONFIDENCE_THRESHOLD:-0.72}
+      ML_WEIGHT: ${ML_WEIGHT:-0.68}
+      RULE_WEIGHT: ${RULE_WEIGHT:-0.32}
+      FETCH_TIMEOUT_MS: ${FETCH_TIMEOUT_MS:-15000}
+      EVIDENCE_PROVIDERS: ${EVIDENCE_PROVIDERS:-local_trusted_corpus}
+      EVIDENCE_MATCH_THRESHOLD: ${EVIDENCE_MATCH_THRESHOLD:-0.16}
+      EVIDENCE_PROVIDER_LIMIT: ${EVIDENCE_PROVIDER_LIMIT:-8}
+      TRUST_WEIGHT_ML_PROBABILITY: ${TRUST_WEIGHT_ML_PROBABILITY:-1.6}
+      TRUST_WEIGHT_CLICKBAIT_DETECTION: ${TRUST_WEIGHT_CLICKBAIT_DETECTION:-0.9}
+      TRUST_WEIGHT_DOMAIN_REPUTATION: ${TRUST_WEIGHT_DOMAIN_REPUTATION:-1.1}
+      TRUST_WEIGHT_WRITING_QUALITY: ${TRUST_WEIGHT_WRITING_QUALITY:-1.0}
+      TRUST_WEIGHT_SENSATIONAL_LANGUAGE: ${TRUST_WEIGHT_SENSATIONAL_LANGUAGE:-1.0}
+      TRUST_WEIGHT_EMOTIONAL_LANGUAGE: ${TRUST_WEIGHT_EMOTIONAL_LANGUAGE:-0.7}
+      TRUST_WEIGHT_AUTHOR_PRESENCE: ${TRUST_WEIGHT_AUTHOR_PRESENCE:-0.5}
+      TRUST_WEIGHT_PUBLICATION_DATE: ${TRUST_WEIGHT_PUBLICATION_DATE:-0.5}
+      TRUST_WEIGHT_ARTICLE_LENGTH: ${TRUST_WEIGHT_ARTICLE_LENGTH:-0.6}
+      TRUST_WEIGHT_SOURCE_RELIABILITY: ${TRUST_WEIGHT_SOURCE_RELIABILITY:-1.2}
+      TRUST_SCORE_HIGH_THRESHOLD: ${TRUST_SCORE_HIGH_THRESHOLD:-75}
+      TRUST_SCORE_MEDIUM_THRESHOLD: ${TRUST_SCORE_MEDIUM_THRESHOLD:-55}
+    expose:
+      - "4000"
+    volumes:
+      - ./backend/database.json:/app/backend/database.json
+      - ./backend/data:/app/backend/data
+      - ./backend/models:/app/backend/models
+
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile.frontend
+    depends_on:
+      backend:
+        condition: service_healthy
+    ports:
+      - "${FRONTEND_PORT:-8080}:80"
+    restart: unless-stopped
