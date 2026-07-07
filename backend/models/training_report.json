@@ -1,30 +1,19 @@
 {
-  "accuracy": 0.9941176470588236,
+  "best_model": "Linear SVM",
+  "model_version": "linear_svm-20260706-201401",
+  "accuracy": 1.0,
+  "precision": 1.0,
+  "recall": 1.0,
+  "f1": 1.0,
   "confusion_matrix": {
-    "Bias": {
-      "Bias": 35,
-      "Fake": 0,
-      "Real": 0,
-      "Satire": 0
+    "FAKE": {
+      "FAKE": 140,
+      "REAL": 0
     },
-    "Fake": {
-      "Bias": 0,
-      "Fake": 135,
-      "Real": 1,
-      "Satire": 0
-    },
-    "Real": {
-      "Bias": 0,
-      "Fake": 1,
-      "Real": 135,
-      "Satire": 0
-    },
-    "Satire": {
-      "Bias": 0,
-      "Fake": 0,
-      "Real": 0,
-      "Satire": 33
+    "REAL": {
+      "FAKE": 0,
+      "REAL": 140
     }
   },
-  "test_size": 340
+  "test_size": 280
 }

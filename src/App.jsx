@@ -1,184 +1,110 @@
-.counter {
-  font-size: 16px;
-  padding: 5px 10px;
-  border-radius: 5px;
-  color: var(--accent);
-  background: var(--accent-bg);
-  border: 2px solid transparent;
-  transition: border-color 0.3s;
-  margin-bottom: 24px;
+import { startTransition, useEffect, useState } from "react";
+import { AppShell } from "./components/AppShell";
+import { ROUTES } from "./constants";
+import { AboutPage } from "./pages/AboutPage";
+import { AnalyzePage } from "./pages/AnalyzePage";
+import { DashboardPage } from "./pages/DashboardPage";
+import { HistoryPage } from "./pages/HistoryPage";
+import { LoginPage } from "./pages/LoginPage";
+import { ModelMetricsPage } from "./pages/ModelMetricsPage";
+import { SystemDiagnosticsPage } from "./pages/SystemDiagnosticsPage";
+import { UrlAnalyzerPage } from "./pages/UrlAnalyzerPage";
 
-  &:hover {
-    border-color: var(--accent-border);
-  }
-  &:focus-visible {
-    outline: 2px solid var(--accent);
-    outline-offset: 2px;
+const SESSION_STORAGE_KEY = "verity-lens-session";
+
+function getRouteFromHash() {
+  const hash = window.location.hash.replace(/^#\/?/, "") || "dashboard";
+  return ROUTES[hash] ? hash : "dashboard";
+}
+
+function loadSession() {
+  try {
+    const raw = window.localStorage.getItem(SESSION_STORAGE_KEY);
+    return raw ? JSON.parse(raw) : null;
+  } catch {
+    return null;
   }
 }
 
-.hero {
-  position: relative;
+export default function App() {
+  const [session, setSession] = useState(() => loadSession());
+  const [route, setRoute] = useState(() => (loadSession() ? getRouteFromHash() : "login"));
+  const [refreshToken, setRefreshToken] = useState(0);
 
-  .base,
-  .framework,
-  .vite {
-    inset-inline: 0;
-    margin: 0 auto;
-  }
-
-  .base {
-    width: 170px;
-    position: relative;
-    z-index: 0;
-  }
-
-  .framework,
-  .vite {
-    position: absolute;
-  }
-
-  .framework {
-    z-index: 1;
-    top: 34px;
-    height: 28px;
-    transform: perspective(2000px) rotateZ(300deg) rotateX(44deg) rotateY(39deg)
-      scale(1.4);
-  }
-
-  .vite {
-    z-index: 0;
-    top: 107px;
-    height: 26px;
-    width: auto;
-    transform: perspective(2000px) rotateZ(300deg) rotateX(40deg) rotateY(39deg)
-      scale(0.8);
-  }
-}
-
-#center {
-  display: flex;
-  flex-direction: column;
-  gap: 25px;
-  place-content: center;
-  place-items: center;
-  flex-grow: 1;
-
-  @media (max-width: 1024px) {
-    padding: 32px 20px 24px;
-    gap: 18px;
-  }
-}
-
-#next-steps {
-  display: flex;
-  border-top: 1px solid var(--border);
-  text-align: left;
-
-  & > div {
-    flex: 1 1 0;
-    padding: 32px;
-    @media (max-width: 1024px) {
-      padding: 24px 20px;
-    }
-  }
-
-  .icon {
-    margin-bottom: 16px;
-    width: 22px;
-    height: 22px;
-  }
-
-  @media (max-width: 1024px) {
-    flex-direction: column;
-    text-align: center;
-  }
-}
-
-#docs {
-  border-right: 1px solid var(--border);
-
-  @media (max-width: 1024px) {
-    border-right: none;
-    border-bottom: 1px solid var(--border);
-  }
-}
-
-#next-steps ul {
-  list-style: none;
-  padding: 0;
-  display: flex;
-  gap: 8px;
-  margin: 32px 0 0;
-
-  .logo {
-    height: 18px;
-  }
-
-  a {
-    color: var(--text-h);
-    font-size: 16px;
-    border-radius: 6px;
-    background: var(--social-bg);
-    display: flex;
-    padding: 6px 12px;
-    align-items: center;
-    gap: 8px;
-    text-decoration: none;
-    transition: box-shadow 0.3s;
-
-    &:hover {
-      box-shadow: var(--shadow);
-    }
-    .button-icon {
-      height: 18px;
-      width: 18px;
-    }
-  }
-
-  @media (max-width: 1024px) {
-    margin-top: 20px;
-    flex-wrap: wrap;
-    justify-content: center;
-
-    li {
-      flex: 1 1 calc(50% - 8px);
+  useEffect(() => {
+    function handleHashChange() {
+      const nextRoute = session ? getRouteFromHash() : "login";
+      startTransition(() => {
+        setRoute(nextRoute);
+      });
     }
 
-    a {
-      width: 100%;
-      justify-content: center;
-      box-sizing: border-box;
+    window.addEventListener("hashchange", handleHashChange);
+    return () => window.removeEventListener("hashchange", handleHashChange);
+  }, [session]);
+
+  useEffect(() => {
+    if (!session) {
+      window.location.hash = "/login";
+      return;
     }
-  }
-}
 
-#spacer {
-  height: 88px;
-  border-top: 1px solid var(--border);
-  @media (max-width: 1024px) {
-    height: 48px;
-  }
-}
+    if (!window.location.hash || window.location.hash === "#/login") {
+      window.location.hash = "/dashboard";
+    }
+  }, [session]);
 
-.ticks {
-  position: relative;
-  width: 100%;
-
-  &::before,
-  &::after {
-    content: '';
-    position: absolute;
-    top: -4.5px;
-    border: 5px solid transparent;
+  function handleLogin(data) {
+    const nextSession = {
+      user: data.user,
+      token: data.token,
+    };
+    window.localStorage.setItem(SESSION_STORAGE_KEY, JSON.stringify(nextSession));
+    setSession(nextSession);
+    window.location.hash = "/dashboard";
   }
 
-  &::before {
-    left: 0;
-    border-left-color: var(--border);
+  function handleLogout() {
+    window.localStorage.removeItem(SESSION_STORAGE_KEY);
+    setSession(null);
+    setRoute("login");
+    window.location.hash = "/login";
   }
-  &::after {
-    right: 0;
-    border-right-color: var(--border);
+
+  function handleNavigate(nextRoute) {
+    startTransition(() => {
+      setRoute(nextRoute);
+    });
+    window.location.hash = `/${nextRoute}`;
   }
+
+  function triggerRefresh() {
+    setRefreshToken((current) => current + 1);
+  }
+
+  if (!session) {
+    return <LoginPage onLogin={handleLogin} />;
+  }
+
+  let page = <DashboardPage refreshToken={refreshToken} />;
+
+  if (route === "analyze") {
+    page = <AnalyzePage onAnalysisSaved={triggerRefresh} />;
+  } else if (route === "url-analyzer") {
+    page = <UrlAnalyzerPage onAnalysisSaved={triggerRefresh} />;
+  } else if (route === "history") {
+    page = <HistoryPage refreshToken={refreshToken} />;
+  } else if (route === "model-metrics") {
+    page = <ModelMetricsPage refreshToken={refreshToken} onModelsUpdated={triggerRefresh} />;
+  } else if (route === "system-diagnostics") {
+    page = <SystemDiagnosticsPage />;
+  } else if (route === "about") {
+    page = <AboutPage />;
+  }
+
+  return (
+    <AppShell route={route} session={session} onNavigate={handleNavigate} onLogout={handleLogout}>
+      {page}
+    </AppShell>
+  );
 }

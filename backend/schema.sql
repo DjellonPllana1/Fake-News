@@ -20,7 +20,7 @@ CREATE TABLE IF NOT EXISTS articles (
   text MEDIUMTEXT NOT NULL,
   subject VARCHAR(120),
   source VARCHAR(160),
-  label ENUM('Real', 'Fake', 'Satire', 'Bias', 'Needs Review') NOT NULL,
+  label VARCHAR(40) NOT NULL,
   published_date DATE,
   INDEX idx_articles_label (label),
   FULLTEXT INDEX ft_articles_title_text (title, text)
@@ -30,12 +30,15 @@ CREATE TABLE IF NOT EXISTS analyses (
   id VARCHAR(40) PRIMARY KEY,
   title VARCHAR(600) NOT NULL,
   source VARCHAR(200),
-  label ENUM('Real', 'Fake', 'Satire', 'Bias', 'Needs Review') NOT NULL,
+  url VARCHAR(700),
+  label VARCHAR(40) NOT NULL,
   confidence INT NOT NULL,
   model VARCHAR(120) NOT NULL,
+  risk_level VARCHAR(30) DEFAULT 'MEDIUM',
   analyzed_at DATETIME NOT NULL,
   language VARCHAR(40) DEFAULT 'English',
   article_id VARCHAR(32),
+  details_json JSON NULL,
   FOREIGN KEY (article_id) REFERENCES articles(id) ON DELETE SET NULL
 );
 

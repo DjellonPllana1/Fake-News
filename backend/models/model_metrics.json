@@ -1,0 +1,273 @@
+{
+  "status": "trained",
+  "generated_at": "2026-07-06T20:14:01Z",
+  "model_version": "linear_svm-20260706-201401",
+  "dataset": {
+    "total_samples": 1400,
+    "training_samples": 1120,
+    "test_samples": 280,
+    "label_distribution": {
+      "REAL": 700,
+      "FAKE": 700
+    }
+  },
+  "preprocessing": {
+    "lowercase": true,
+    "remove_urls": true,
+    "remove_punctuation": true,
+    "remove_stopwords": true,
+    "stemming": "PorterStemmer",
+    "vectorizer": "TF-IDF",
+    "ngram_range": [
+      1,
+      2
+    ],
+    "min_df": 2,
+    "max_df": 0.97,
+    "sublinear_tf": true
+  },
+  "decision_policy": {
+    "confidence_threshold_default": 0.72,
+    "low_confidence_label": "UNCERTAIN"
+  },
+  "best_model": {
+    "id": "linear_svm",
+    "name": "Linear SVM",
+    "accuracy": 1.0,
+    "precision": 1.0,
+    "recall": 1.0,
+    "f1": 1.0,
+    "labels": [
+      "FAKE",
+      "REAL"
+    ],
+    "confusion_matrix": [
+      [
+        140,
+        0
+      ],
+      [
+        0,
+        140
+      ]
+    ],
+    "confusion_matrix_named": {
+      "FAKE": {
+        "FAKE": 140,
+        "REAL": 0
+      },
+      "REAL": {
+        "FAKE": 0,
+        "REAL": 140
+      }
+    },
+    "classification_report": {
+      "FAKE": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1-score": 1.0,
+        "support": 140.0
+      },
+      "REAL": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1-score": 1.0,
+        "support": 140.0
+      },
+      "accuracy": 1.0,
+      "macro avg": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1-score": 1.0,
+        "support": 280.0
+      },
+      "weighted avg": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1-score": 1.0,
+        "support": 280.0
+      }
+    },
+    "artifact_path": "backend\\models\\best_model.joblib",
+    "version": "linear_svm-20260706-201401"
+  },
+  "models": [
+    {
+      "id": "multinomial_naive_bayes",
+      "name": "Multinomial Naive Bayes",
+      "accuracy": 0.9929,
+      "precision": 0.993,
+      "recall": 0.9929,
+      "f1": 0.9929,
+      "labels": [
+        "FAKE",
+        "REAL"
+      ],
+      "confusion_matrix": [
+        [
+          138,
+          2
+        ],
+        [
+          0,
+          140
+        ]
+      ],
+      "confusion_matrix_named": {
+        "FAKE": {
+          "FAKE": 138,
+          "REAL": 2
+        },
+        "REAL": {
+          "FAKE": 0,
+          "REAL": 140
+        }
+      },
+      "classification_report": {
+        "FAKE": {
+          "precision": 1.0,
+          "recall": 0.9857142857142858,
+          "f1-score": 0.9928057553956835,
+          "support": 140.0
+        },
+        "REAL": {
+          "precision": 0.9859154929577465,
+          "recall": 1.0,
+          "f1-score": 0.9929078014184397,
+          "support": 140.0
+        },
+        "accuracy": 0.9928571428571429,
+        "macro avg": {
+          "precision": 0.9929577464788732,
+          "recall": 0.9928571428571429,
+          "f1-score": 0.9928567784070617,
+          "support": 280.0
+        },
+        "weighted avg": {
+          "precision": 0.9929577464788731,
+          "recall": 0.9928571428571429,
+          "f1-score": 0.9928567784070614,
+          "support": 280.0
+        }
+      }
+    },
+    {
+      "id": "logistic_regression",
+      "name": "Logistic Regression",
+      "accuracy": 0.9964,
+      "precision": 0.9965,
+      "recall": 0.9964,
+      "f1": 0.9964,
+      "labels": [
+        "FAKE",
+        "REAL"
+      ],
+      "confusion_matrix": [
+        [
+          139,
+          1
+        ],
+        [
+          0,
+          140
+        ]
+      ],
+      "confusion_matrix_named": {
+        "FAKE": {
+          "FAKE": 139,
+          "REAL": 1
+        },
+        "REAL": {
+          "FAKE": 0,
+          "REAL": 140
+        }
+      },
+      "classification_report": {
+        "FAKE": {
+          "precision": 1.0,
+          "recall": 0.9928571428571429,
+          "f1-score": 0.996415770609319,
+          "support": 140.0
+        },
+        "REAL": {
+          "precision": 0.9929078014184397,
+          "recall": 1.0,
+          "f1-score": 0.99644128113879,
+          "support": 140.0
+        },
+        "accuracy": 0.9964285714285714,
+        "macro avg": {
+          "precision": 0.9964539007092199,
+          "recall": 0.9964285714285714,
+          "f1-score": 0.9964285258740545,
+          "support": 280.0
+        },
+        "weighted avg": {
+          "precision": 0.9964539007092197,
+          "recall": 0.9964285714285714,
+          "f1-score": 0.9964285258740546,
+          "support": 280.0
+        }
+      }
+    },
+    {
+      "id": "linear_svm",
+      "name": "Linear SVM",
+      "accuracy": 1.0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0,
+      "labels": [
+        "FAKE",
+        "REAL"
+      ],
+      "confusion_matrix": [
+        [
+          140,
+          0
+        ],
+        [
+          0,
+          140
+        ]
+      ],
+      "confusion_matrix_named": {
+        "FAKE": {
+          "FAKE": 140,
+          "REAL": 0
+        },
+        "REAL": {
+          "FAKE": 0,
+          "REAL": 140
+        }
+      },
+      "classification_report": {
+        "FAKE": {
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1-score": 1.0,
+          "support": 140.0
+        },
+        "REAL": {
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1-score": 1.0,
+          "support": 140.0
+        },
+        "accuracy": 1.0,
+        "macro avg": {
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1-score": 1.0,
+          "support": 280.0
+        },
+        "weighted avg": {
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1-score": 1.0,
+          "support": 280.0
+        }
+      }
+    }
+  ]
+}

@@ -48,35 +48,60 @@ try {
 
   for (const item of database.analyses) {
     await connection.execute(
-      `INSERT INTO analyses (id, title, source, label, confidence, model, analyzed_at, language, article_id)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+      `INSERT INTO analyses (id, title, source, url, label, confidence, model, risk_level, analyzed_at, language, article_id, details_json)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
        ON DUPLICATE KEY UPDATE
          title = ?,
          source = ?,
+         url = ?,
          label = ?,
          confidence = ?,
          model = ?,
+         risk_level = ?,
          analyzed_at = ?,
          language = ?,
-         article_id = ?`,
+         article_id = ?,
+         details_json = ?`,
       [
         item.id,
         item.title,
         item.source,
+        item.url || null,
         item.label,
         item.confidence,
         item.model,
+        item.riskLevel || item.risk_level || "MEDIUM",
         new Date(item.date.replace(" ", "T")),
         item.language || "English",
         item.articleId || null,
+        JSON.stringify({
+          confidenceScore: item.confidenceScore ?? item.confidence / 100,
+          explanation: item.explanation || "",
+          summary: item.summary || "",
+          keywords: item.keywords || [],
+          probabilities: item.probabilities || null,
+          warning: item.warning || "",
+          textPreview: item.textPreview || "",
+        }),
         item.title,
         item.source,
+        item.url || null,
         item.label,
         item.confidence,
         item.model,
+        item.riskLevel || item.risk_level || "MEDIUM",
         new Date(item.date.replace(" ", "T")),
         item.language || "English",
         item.articleId || null,
+        JSON.stringify({
+          confidenceScore: item.confidenceScore ?? item.confidence / 100,
+          explanation: item.explanation || "",
+          summary: item.summary || "",
+          keywords: item.keywords || [],
+          probabilities: item.probabilities || null,
+          warning: item.warning || "",
+          textPreview: item.textPreview || "",
+        }),
       ],
     );
   }

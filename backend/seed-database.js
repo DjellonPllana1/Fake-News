@@ -76,7 +76,7 @@ async function loadArticles(csvPath, label, prefix) {
       title: (record[columns.title] || "Untitled article").trim(),
       text: (record[columns.text] || "").trim(),
       subject: (record[columns.subject] || "General").trim(),
-      source: label === "Real" ? "Reuters dataset" : "FakeNewsNet dataset",
+      source: label === "REAL" ? "Reuters dataset" : "FakeNewsNet dataset",
       label,
       date: normalizeDate(record[columns.date] || "", index),
     }));
@@ -86,8 +86,8 @@ const truePath = path.resolve(trueCsvPath);
 const fakePath = path.resolve(fakeCsvPath);
 
 const [realArticles, fakeArticles] = await Promise.all([
-  loadArticles(truePath, "Real", "REAL"),
-  loadArticles(fakePath, "Fake", "FAKE"),
+  loadArticles(truePath, "REAL", "REAL"),
+  loadArticles(fakePath, "FAKE", "FAKE"),
 ]);
 
 const database = createEmptyDatabase();
@@ -99,11 +99,18 @@ database.analyses = database.articles.slice(0, 25).map((article, index) => ({
   title: article.title,
   source: article.source,
   label: article.label,
-  confidence: article.label === "Real" ? 91 : 94,
-  model: "Dataset Similarity + Keyword Rules v1.0",
+  confidence: article.label === "REAL" ? 91 : 94,
+  confidenceScore: article.label === "REAL" ? 0.91 : 0.94,
+  model: "Seeded Historical Record",
   date: `${article.date} 09:${String(index % 60).padStart(2, "0")}`,
   language: "English",
   articleId: article.id,
+  riskLevel: article.label === "REAL" ? "LOW" : "HIGH",
+  summary: article.text.slice(0, 220),
+  explanation: article.label === "REAL" ? "Seeded as a baseline real article record." : "Seeded as a baseline fake article record.",
+  keywords: article.title.toLowerCase().split(/\s+/).filter((token) => token.length > 4).slice(0, 6),
+  probabilities: article.label === "REAL" ? { REAL: 0.91, FAKE: 0.09 } : { FAKE: 0.94, REAL: 0.06 },
+  textPreview: article.text.slice(0, 300),
 }));
 
 await writeDatabase(database);

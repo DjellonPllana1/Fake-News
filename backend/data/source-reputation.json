@@ -1,0 +1,230 @@
+{
+  "meta": {
+    "name": "Verity Lens Source Reputation Registry",
+    "version": 1,
+    "updatedAt": "2026-07-06",
+    "description": "Local domain reputation registry used for source metadata, badges, and trust scoring. Add more entries to the domains array to extend coverage."
+  },
+  "domains": [
+    {
+      "domain": "reuters.com",
+      "aliases": ["reuters"],
+      "badge": "Trusted",
+      "trustScore": 95,
+      "politicalBias": "Center",
+      "country": "United Kingdom / Global",
+      "reliability": "High",
+      "factCheckingHistory": "Strong wire-service standards and a consistent corrections process; widely used as a baseline reference in news verification."
+    },
+    {
+      "domain": "apnews.com",
+      "aliases": ["ap", "associatedpress"],
+      "badge": "Trusted",
+      "trustScore": 94,
+      "politicalBias": "Center",
+      "country": "United States",
+      "reliability": "High",
+      "factCheckingHistory": "Associated Press maintains an established editorial workflow and is commonly cited during fact-checking reviews."
+    },
+    {
+      "domain": "bbc.com",
+      "aliases": ["bbc", "bbc.co.uk"],
+      "badge": "Trusted",
+      "trustScore": 92,
+      "politicalBias": "Center",
+      "country": "United Kingdom",
+      "reliability": "High",
+      "factCheckingHistory": "BBC reporting generally shows strong verification discipline with transparent corrections and editorial standards."
+    },
+    {
+      "domain": "npr.org",
+      "aliases": ["npr"],
+      "badge": "Trusted",
+      "trustScore": 90,
+      "politicalBias": "Lean Left",
+      "country": "United States",
+      "reliability": "High",
+      "factCheckingHistory": "NPR usually performs well in factual reporting assessments and publishes corrections when needed."
+    },
+    {
+      "domain": "theguardian.com",
+      "aliases": ["guardian", "theguardian"],
+      "badge": "Trusted",
+      "trustScore": 88,
+      "politicalBias": "Lean Left",
+      "country": "United Kingdom",
+      "reliability": "High",
+      "factCheckingHistory": "The Guardian has a documented editorial code and a visible corrections workflow, though opinion content can be strongly framed."
+    },
+    {
+      "domain": "nytimes.com",
+      "aliases": ["nyt", "nytimes"],
+      "badge": "Trusted",
+      "trustScore": 89,
+      "politicalBias": "Lean Left",
+      "country": "United States",
+      "reliability": "High",
+      "factCheckingHistory": "The New York Times generally scores highly for factual reporting and publishes formal corrections and editor notes."
+    },
+    {
+      "domain": "washingtonpost.com",
+      "aliases": ["washingtonpost", "wapo"],
+      "badge": "Trusted",
+      "trustScore": 88,
+      "politicalBias": "Lean Left",
+      "country": "United States",
+      "reliability": "High",
+      "factCheckingHistory": "The Washington Post has a strong newsroom verification culture and formal corrections tracking."
+    },
+    {
+      "domain": "wsj.com",
+      "aliases": ["wallstreetjournal", "wsj"],
+      "badge": "Trusted",
+      "trustScore": 90,
+      "politicalBias": "Center Right",
+      "country": "United States",
+      "reliability": "High",
+      "factCheckingHistory": "The Wall Street Journal news desk is broadly viewed as reliable, with clear separation from opinion pages."
+    },
+    {
+      "domain": "pbs.org",
+      "aliases": ["pbs"],
+      "badge": "Trusted",
+      "trustScore": 89,
+      "politicalBias": "Lean Left",
+      "country": "United States",
+      "reliability": "High",
+      "factCheckingHistory": "PBS reporting is generally stable and evidence-based, with a strong public-service editorial model."
+    },
+    {
+      "domain": "dw.com",
+      "aliases": ["dw"],
+      "badge": "Trusted",
+      "trustScore": 87,
+      "politicalBias": "Center",
+      "country": "Germany",
+      "reliability": "High",
+      "factCheckingHistory": "Deutsche Welle is usually regarded as reliable international reporting with transparent sourcing."
+    },
+    {
+      "domain": "aljazeera.com",
+      "aliases": ["aljazeera"],
+      "badge": "Trusted",
+      "trustScore": 85,
+      "politicalBias": "Lean Left",
+      "country": "Qatar / Global",
+      "reliability": "High",
+      "factCheckingHistory": "Al Jazeera frequently provides original reporting, though regional coverage can be interpreted through geopolitical context."
+    },
+    {
+      "domain": "usatoday.com",
+      "aliases": ["usatoday"],
+      "badge": "Medium",
+      "trustScore": 76,
+      "politicalBias": "Center",
+      "country": "United States",
+      "reliability": "Mostly High",
+      "factCheckingHistory": "USA Today is usually reliable for general reporting, though depth and framing can vary by desk."
+    },
+    {
+      "domain": "cnn.com",
+      "aliases": ["cnn"],
+      "badge": "Medium",
+      "trustScore": 73,
+      "politicalBias": "Lean Left",
+      "country": "United States",
+      "reliability": "Mixed to High",
+      "factCheckingHistory": "CNN has strong breaking-news reach but has also faced criticism over framing and uneven opinion-linked coverage."
+    },
+    {
+      "domain": "foxnews.com",
+      "aliases": ["foxnews", "fox"],
+      "badge": "Medium",
+      "trustScore": 68,
+      "politicalBias": "Lean Right",
+      "country": "United States",
+      "reliability": "Mixed",
+      "factCheckingHistory": "Fox News news reporting can be factual, but its broader brand often carries strong partisan framing and recurring fact-check disputes."
+    },
+    {
+      "domain": "newsweek.com",
+      "aliases": ["newsweek"],
+      "badge": "Medium",
+      "trustScore": 66,
+      "politicalBias": "Center",
+      "country": "United States",
+      "reliability": "Mixed",
+      "factCheckingHistory": "Newsweek still publishes useful reporting, but editorial consistency and source quality can vary significantly."
+    },
+    {
+      "domain": "independent.co.uk",
+      "aliases": ["independent"],
+      "badge": "Medium",
+      "trustScore": 64,
+      "politicalBias": "Lean Left",
+      "country": "United Kingdom",
+      "reliability": "Mixed",
+      "factCheckingHistory": "The Independent can be informative, but sensational presentation and variable sourcing lower its consistency."
+    },
+    {
+      "domain": "beforeitsnews.com",
+      "aliases": ["beforeitsnews"],
+      "badge": "Suspicious",
+      "trustScore": 18,
+      "politicalBias": "Conspiracy / Mixed",
+      "country": "United States",
+      "reliability": "Low",
+      "factCheckingHistory": "This domain has a long history of unverified and conspiratorial content with poor editorial accountability."
+    },
+    {
+      "domain": "naturalnews.com",
+      "aliases": ["naturalnews"],
+      "badge": "Suspicious",
+      "trustScore": 16,
+      "politicalBias": "Alternative Health / Conspiracy",
+      "country": "United States",
+      "reliability": "Low",
+      "factCheckingHistory": "Natural News has repeatedly been criticized for pseudoscientific and false health-related claims."
+    },
+    {
+      "domain": "newspunch.com",
+      "aliases": ["yournewswire", "newspunch"],
+      "badge": "Suspicious",
+      "trustScore": 15,
+      "politicalBias": "Conspiracy / Mixed",
+      "country": "United Kingdom",
+      "reliability": "Low",
+      "factCheckingHistory": "This outlet has repeatedly appeared in misinformation roundups and fact-check debunks for fabricated stories."
+    },
+    {
+      "domain": "worldnewsdailyreport.com",
+      "aliases": ["worldnewsdailyreport"],
+      "badge": "Suspicious",
+      "trustScore": 12,
+      "politicalBias": "Satire / Hoax",
+      "country": "Unknown",
+      "reliability": "Low",
+      "factCheckingHistory": "This domain is frequently associated with fabricated or hoax-style content that should not be treated as factual reporting."
+    },
+    {
+      "domain": "realrawnews.com",
+      "aliases": ["realrawnews"],
+      "badge": "Suspicious",
+      "trustScore": 10,
+      "politicalBias": "Far Right / Conspiracy",
+      "country": "United States",
+      "reliability": "Low",
+      "factCheckingHistory": "Real Raw News has been widely debunked for publishing fabricated stories presented as real news."
+    },
+    {
+      "domain": "thelastlineofdefense.org",
+      "aliases": ["lastlineofdefense"],
+      "badge": "Suspicious",
+      "trustScore": 9,
+      "politicalBias": "Satire / Hoax",
+      "country": "United States",
+      "reliability": "Low",
+      "factCheckingHistory": "This domain is known for false or satirical-style political content that is often reshared as if it were factual."
+    }
+  ]
+}
