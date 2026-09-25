@@ -1,3 +1,21 @@
+/**
+ * ============================================================================
+ * SHËRBIMI I BAZËS SË TË DHËNAVE (databaseService.js)
+ * ============================================================================
+ * Qëllimi:
+ * Ky skedar shërben si "kujtesa e përhershme" e gjithë aplikacionit.
+ * Këtu ruhen dhe lexohen të gjithë artikujt, analizat, përdoruesit dhe njoftimet.
+ * 
+ * Si funksionon me fjalë të thjeshta:
+ * Sistemi është ndërtuar në mënyrë shumë inteligjente:
+ * 1. Mënyra Lokale (JSON): Nëse punojmë në kompjuter pa instaluar servera të rëndë,
+ *    të gjitha të dhënat ruhen bukur në skedarin `backend/database.json`.
+ * 2. Mënyra Profesionale (MySQL): Nëse aplikacioni hidhet në internet për miliona vizitorë,
+ *    ai lidhet automatikisht me një bazë të dhënash të vërtetë MySQL (kur DB_CLIENT="mysql").
+ * Pavarësisht se cila mënyrë përdoret, ky skedar ofron të njëjtat funksione të thjeshta:
+ * ruaj analizën, gjej përdoruesin, lexo artikujt, fshi të dhënat.
+ */
+
 import fs from "fs/promises";
 import path from "path";
 import mysql from "mysql2/promise";

@@ -1,3 +1,19 @@
+/**
+ * ============================================================================
+ * SHËRBIMI I STATISTIKAVE DHE GRAFIKËVE (dashboardService.js)
+ * ============================================================================
+ * Qëllimi:
+ * Ky skedar përpunon shifrat dhe të dhënat e papërpunuara nga databaza
+ * dhe i shndërron në grafikë e përqindje të lehta për t'u kuptuar në ekran.
+ * 
+ * Si funksionon me fjalë të thjeshta:
+ * Ashtu si një analist që merr mijëra të dhëna dhe nxjerr një raport të qartë:
+ * - Sa lajme u analizuan gjithsej?
+ * - Sa për qind kanë dalë lajme të rreme (Fake), të vërteta (Real), apo të pasigurta (Uncertain)?
+ * - Cilat janë portalet më aktive dhe a ka ndonjë prirje (trend) rritjeje të lajmeve të rreme sipas muajve?
+ * - Cila është nota mesatare e besueshmërisë?
+ */
+
 import { readDatabase, toAnalysisRow } from "../database.js";
 import { formatDateTime } from "../utils/date.js";
 import { summarizeDistribution } from "../utils/labels.js";

@@ -1,9 +1,29 @@
+/**
+ * ============================================================================
+ * SHËRBIMI I REPUTACIONIT TË BURIMEVE (sourceReputationService.js)
+ * ============================================================================
+ * Qëllimi:
+ * Ky skedar shërben si "regjistri i besueshmërisë" për mediat dhe portalet e lajmeve.
+ * 
+ * Si funksionon me fjalë të thjeshta:
+ * Ashtu si në jetën reale ku disa gazeta njihen për gazetari serioze dhe disa të tjera
+ * për thashetheme e mashtrime, ky sistem mban një listë me emrat e faqeve të internetit:
+ * - Burime të Besueshme (Trusted): p.sh. Reuters, BBC, agjenci të njohura lajmesh (pikë të larta).
+ * - Burime të Mesme (Medium): faqe me besueshmëri mesatare.
+ * - Burime të Dyshimta (Suspicious): portale që shpërndajnë klikime mashtruese (clickbait) ose gënjeshtra.
+ * - Të Panjohura (Unknown): faqe të reja që nuk janë vlerësuar ende (marrin pikë neutrale 50/100).
+ */
+
 import fs from "fs";
 import path from "path";
 
+// Vendndodhja e skedarit ku ndodhet lista me portalet e vlerësuara
 const registryFile = path.resolve("backend", "data", "source-reputation.json");
 let cachedRegistry = null;
 
+/**
+ * Funksion ndihmës: Kufizon notën që të jetë gjithmonë midis 0 dhe 100.
+ */
 function clampScore(value) {
   const numeric = Number(value);
 
@@ -14,6 +34,9 @@ function clampScore(value) {
   return Math.max(0, Math.min(100, Math.round(numeric)));
 }
 
+/**
+ * Funksion ndihmës: Standardizon etiketën (Trusted, Medium, Suspicious).
+ */
 function normalizeBadge(value = "") {
   const normalized = String(value || "").trim().toLowerCase();
 
@@ -32,6 +55,12 @@ function normalizeBadge(value = "") {
   return "Unknown";
 }
 
+/**
+ * Përcakton nivelin sipas notës me pikë:
+ * - Mbi 80 pikë -> E Besueshme (Trusted)
+ * - Mbi 55 pikë -> Mesatare (Medium)
+ * - Nën 55 pikë -> E Dyshimtë (Suspicious)
+ */
 function deriveBadge(score) {
   if (score >= 80) {
     return "Trusted";
@@ -44,6 +73,10 @@ function deriveBadge(score) {
   return "Suspicious";
 }
 
+/**
+ * Pastron adresën e uebfaqes (URL-në) për të nxjerrë vetëm emrin e thjeshtë të domenit.
+ * Shembull: "https://www.bbc.com/news/article123" shndërrohet thjesht në "bbc.com".
+ */
 function normalizeDomain(value = "") {
   const input = String(value || "").trim().toLowerCase();
 
@@ -71,6 +104,9 @@ function normalizeDomain(value = "") {
   }
 }
 
+/**
+ * Formatizon të dhënat e një portali në regjistër.
+ */
 function normalizeEntry(entry = {}, index = 0) {
   const domain = normalizeDomain(entry.domain || entry.host || "");
   const aliases = [...new Set((Array.isArray(entry.aliases) ? entry.aliases : []).map(normalizeDomain).filter(Boolean))];
@@ -92,6 +128,10 @@ function normalizeEntry(entry = {}, index = 0) {
   };
 }
 
+/**
+ * Përgatit përgjigjen kur një portal nuk njihet fare nga sistemi.
+ * Merr pikë neutrale (50 nga 100).
+ */
 function buildUnknownReputation(domain = "") {
   return {
     known: false,
@@ -102,12 +142,16 @@ function buildUnknownReputation(domain = "") {
     politicalBias: "Unknown",
     country: "Unknown",
     reliability: "Unknown",
-    factCheckingHistory: "This domain is not yet listed in the local source reputation registry.",
+    factCheckingHistory: "Ky portal nuk është regjistruar ende në listën e reputacionit.",
     notes: "",
     matchedDomain: domain || "",
   };
 }
 
+/**
+ * Lexon skedarin e regjistrit nga disku dhe e ruan në memorie (Cache)
+ * që serveri të mos e lexojë skedarin nga e para çdo sekondë.
+ */
 function loadRegistry() {
   if (cachedRegistry) {
     return cachedRegistry;
@@ -133,6 +177,10 @@ function loadRegistry() {
   return cachedRegistry;
 }
 
+/**
+ * Kontrollon nëse domeni i kërkuar përputhet me një portal të njohur
+ * (përfshirë nëndomenet, p.sh. news.bbc.co.uk përputhet me bbc.co.uk).
+ */
 function matchesDomain(hostname, entry) {
   if (!hostname || !entry?.domain) {
     return false;
@@ -145,10 +193,17 @@ function matchesDomain(hostname, entry) {
   return entry.aliases.some((alias) => hostname === alias || hostname.endsWith(`.${alias}`));
 }
 
+/**
+ * Kthen të gjithë regjistrin e portaleve të njohura.
+ */
 export function getSourceReputationRegistry() {
   return loadRegistry();
 }
 
+/**
+ * FUNKSIONI KRYESOR: Gjen reputacionin e një faqeje specifike
+ * Merr linkun ose emrin e portalit dhe kthen të gjitha të dhënat mbi të.
+ */
 export function getSourceReputation(value = "") {
   const registry = loadRegistry();
   const hostname = normalizeDomain(value);
@@ -157,12 +212,14 @@ export function getSourceReputation(value = "") {
     return buildUnknownReputation("");
   }
 
+  // Kërkojmë nëse domeni ndodhet në listën tonë
   const entry = registry.domains.find((item) => matchesDomain(hostname, item));
 
   if (!entry) {
     return buildUnknownReputation(hostname);
   }
 
+  // Kthejmë profilin e plotë të reputacionit të atij portali
   return {
     known: true,
     domain: entry.domain,
@@ -179,6 +236,9 @@ export function getSourceReputation(value = "") {
   };
 }
 
+/**
+ * Kontrollon shpejt a është ky portal në kategorinë "I Besueshëm" (Trusted).
+ */
 export function isTrustedSource(value = "") {
   return getSourceReputation(value).badge === "Trusted";
 }

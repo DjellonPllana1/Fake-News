@@ -1,3 +1,16 @@
+/**
+ * ============================================================================
+ * SKRIPTI I MBUSHJES SË BAZËS SË TË DHËNAVE (seed-database.js)
+ * ============================================================================
+ * Qëllimi:
+ * Ky skedar përdoret kur nisim aplikacionin për herë të parë dhe duam ta mbushim
+ * bazën e të dhënave (database.json) me mijëra artikuj model (True.csv dhe Fake.csv).
+ * 
+ * Si funksionon me fjalë të thjeshta:
+ * Lexon skedarët me lajme të vërteta dhe të rreme, i pastron ato dhe i ruan në sistem,
+ * së bashku me llogaritë fillestare të përdoruesve (Admin, Analyst, etj.).
+ */
+
 import fs from "fs/promises";
 import path from "path";
 import { createEmptyDatabase, writeDatabase } from "./database.js";

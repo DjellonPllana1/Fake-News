@@ -1,3 +1,16 @@
+/**
+ * ============================================================================
+ * SKRIPTI I MBUSHJES SË BAZËS SË TË DHËNAVE MYSQL (seed-mysql.js)
+ * ============================================================================
+ * Qëllimi:
+ * Ky skedar transferon të gjitha të dhënat nga skedari `database.json`
+ * direkt në një server të vërtetë MySQL.
+ * 
+ * Si funksionon me fjalë të thjeshta:
+ * Lidhhet me serverin MySQL, hap një transaksion të sigurt,
+ * dhe fut të gjithë artikujt, analizat, përdoruesit dhe njoftimet në tabelat SQL.
+ */
+
 import { readFile } from "fs/promises";
 import mysql from "mysql2/promise";
 import "./env.js";

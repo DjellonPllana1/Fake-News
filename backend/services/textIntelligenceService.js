@@ -1,3 +1,24 @@
+/**
+ * ============================================================================
+ * MOTORRI I ANALIZËS GJUHËSORE TË TEKSTIT - NLP (textIntelligenceService.js)
+ * ============================================================================
+ * Qëllimi:
+ * Ky skedar kryen analizën e thellë gjuhësore dhe psikologjike të artikullit (NLP).
+ * 
+ * Si funksionon me fjalë të thjeshta:
+ * Mashtruesit dhe lajmet e rreme shpesh përdorin truke të caktuara gjuhësore
+ * për të tërhequr vëmendjen dhe për të manipuluar njerëzit.
+ * Ky skedar skanon tekstin për këto shenja paralajmëruese:
+ * 
+ * 1. Tituj mashtrues (Clickbait): Fjali si "Nuk do ta besoni çfarë ndodhi!", "Sekreti u zbulua!".
+ * 2. Gjuhë sensacionale: Fjalë si "Bombë!", "Tronditëse!", "Mrekulli!", "Komplot!".
+ * 3. Ngarkesë emocionale: Fjalë që nxisin frikë, urrejtje, panik apo zemërim.
+ * 4. Shenja pikësimi të tepërta: Përdorimi i "!!!" ose "???" me shumicë.
+ * 5. Shkronja të mëdha (Bërtitje): Përdorimi i shkronjave kapitale në krejt fjalinë (p.sh. "KJO ËSHTË E VËRTETA").
+ * 6. Ndjenja (Sentiment): A është toni i artikullit objektiv dhe gazetaresk, apo agresiv dhe sulmues?
+ * 7. Vështirësia e leximit: Sa i qartë dhe i strukturuar është teksti.
+ */
+
 import { clampConfidence, getRiskLevel, normalizeResultLabel } from "../utils/labels.js";
 import { buildExtractiveSummary, extractKeywordCandidates, normalizeWhitespace, removeUrls, splitSentences } from "../utils/text.js";
 import { getHostname } from "./articleFetchService.js";

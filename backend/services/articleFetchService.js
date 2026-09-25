@@ -1,3 +1,23 @@
+/**
+ * ============================================================================
+ * SHËRBIMI I SHKARKIMIT DHE NXJERRJES SË LAJMIT NGA UEBI (articleFetchService.js)
+ * ============================================================================
+ * Qëllimi:
+ * Ky skedar mundëson që përdoruesi të analizojë një lajm thjesht duke dhënë linkun (URL).
+ * 
+ * Si funksionon me fjalë të thjeshta:
+ * Faqet e lajmeve në internet janë plot me reklama, meny, butona dhe skripte të padobishme.
+ * Ky shërbim vepron si një "lexues inteligjent":
+ * 1. Shkon te faqja e portalit dhe shkarkon kodin HTML të faqes.
+ * 2. Pastron reklamat, menytë dhe kodet e panevojshme.
+ * 3. Gjen automatikisht:
+ *    - Titullin e vërtetë të lajmit
+ *    - Tekstin kryesor të artikullit
+ *    - Emrin e gazetarit/autorit
+ *    - Datën kur është shkruar lajmi
+ * Në këtë mënyrë, sistemi merr vetëm thelbin e lajmit pa mbeturina.
+ */
+
 import { AppError } from "../utils/appError.js";
 import { buildHeadlineFromText, decodeHtmlEntities, normalizeWhitespace, stripHtml } from "../utils/text.js";
 import { getSourceReputation as lookupSourceReputation, isTrustedSource as lookupTrustedSource } from "./sourceReputationService.js";

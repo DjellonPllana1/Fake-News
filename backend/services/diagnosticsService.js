@@ -1,3 +1,17 @@
+/**
+ * ============================================================================
+ * SHËRBIMI I DIAGNOSTIKIMIT TË SISTEMIT (diagnosticsService.js)
+ * ============================================================================
+ * Qëllimi:
+ * Ky skedar kontrollon "shëndetin" dhe funksionimin teknik të gjithë sistemit.
+ * 
+ * Si funksionon me fjalë të thjeshta:
+ * 1. Kontrollon pajisjen fizike (sa memorie RAM ka kompjuteri, sa është e zënë, cila është platforma Windows/Linux).
+ * 2. Kontrollon skedarët e Inteligjencës Artificiale (a ekzistojnë modelet e trajnuara .pkl, madhësia e tyre).
+ * 3. Kontrollon bazën e të dhënave (sa artikuj dhe përdorues janë regjistruar).
+ * 4. Përmbledh gjithçka në një raport të qartë për administratorin.
+ */
+
 import fs from "fs/promises";
 import os from "os";
 import path from "path";

@@ -1,3 +1,18 @@
+/**
+ * ============================================================================
+ * SHËRBIMI I EKSPORTIT TË RAPORTEVE (exportService.js)
+ * ============================================================================
+ * Qëllimi:
+ * Ky skedar krijon dokumentet zyrtare PDF, tabelat Excel (CSV) dhe skedarët JSON.
+ * 
+ * Si funksionon me fjalë të thjeshta:
+ * Kur përdoruesi do ta marrë analizën me vete:
+ * - PDF: Ndërton një raport akademik me ngjyra, logo, vlerësimin, provat dhe grafikët,
+ *   i gatshëm për t'u printuar ose për t'u dërguar si dokument zyrtar.
+ * - CSV: Krijon tabelën me të gjitha kolonat për ta hapur në Microsoft Excel.
+ * - JSON: Përmbledh të dhënat e papërpunuara për shkencëtarët e të dhënave.
+ */
+
 import { readDatabase, toAnalysisRow } from "../database.js";
 import { buildCsv } from "../utils/csv.js";
 import { formatDateTime } from "../utils/date.js";

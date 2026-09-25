@@ -1,8 +1,38 @@
+/**
+ * ============================================================================
+ * MOTORRI I NOTËS SË BESUESHMËRISË (trustScoreService.js)
+ * ============================================================================
+ * Qëllimi:
+ * Ky skedar llogarit "Notën e Besueshmërisë" (Trust Score) nga 0 deri në 100 pikë.
+ * 
+ * Si funksionon me fjalë të thjeshta:
+ * Ashtu si një mësues që vlerëson një ese duke parë disa kritere (drejtshkrimin,
+ * përmbajtjen, faktet dhe logjikën), ky motor vlerëson lajmin duke kombinuar 10 sinjale:
+ * 
+ * 1. Modeli i Inteligjencës Artificiale (ML Probability): Pesha 1.6 - Si e vlerëson AI-ja?
+ * 2. Zbulimi i klikimeve mashtruese (Clickbait): Pesha 0.9 - A është titulli mashtrues?
+ * 3. Reputacioni i domenit (Domain Reputation): Pesha 1.1 - A njihet portali si serioz?
+ * 4. Cilësia e të shkruarit (Writing Quality): Pesha 1.0 - A ka fjali normale apo me britma?
+ * 5. Gjuha sensacionale (Sensational Language): Pesha 1.0 - A ka fjalë ekzagjeruese ("Tronditëse!")?
+ * 6. Gjuha emocionale (Emotional Language): Pesha 0.7 - A përpiqet të nxisë urrejtje/panik?
+ * 7. Prania e autorit (Author Presence): Pesha 0.5 - A ka emër gazetari apo është anonim?
+ * 8. Data e publikimit (Publication Date): Pesha 0.5 - A dihet kur ka ndodhur ngjarja?
+ * 9. Gjatësia e artikullit (Article Length): Pesha 0.6 - A është lajm i plotë apo 2 rreshta?
+ * 10. Besueshmëria e burimit dhe provat (Source Reliability): Pesha 1.2 - A ka prova konkrete?
+ * 
+ * Rezultati përfundimtar (0 - 100):
+ * - 80 - 100: Besueshmëri e Lartë (High Trust) -> Lajm i besueshëm
+ * - 60 - 79:  Besueshmëri Mesatare (Moderate Trust) -> Këshillohet kujdes
+ * - 40 - 59:  I Paqartë / Neutral (Uncertain) -> Mungojnë provat
+ * - 0 - 39:   Besueshmëri e Ulët (Low Trust / Suspicious) -> Lajm i rremë ose mashtrues
+ */
+
 import { clampConfidence } from "../utils/labels.js";
 import { normalizeWhitespace, splitSentences } from "../utils/text.js";
 import { getHostname } from "./articleFetchService.js";
 import { getSourceReputation, isTrustedSource } from "./sourceReputationService.js";
 
+// Peshat fillestare për secilin nga 10 faktorët
 const DEFAULT_WEIGHTS = {
   mlProbability: 1.6,
   clickbaitDetection: 0.9,
@@ -272,6 +302,11 @@ function buildReasonSummary({ score, signals }) {
   return reasons.filter(Boolean).slice(0, 4);
 }
 
+/**
+ * FUNKSIONI KRYESOR: NDËRTIMI I NOTËS SË BESUESHMËRISË (Trust Score)
+ * Merr të gjitha informacionet e grumbulluara nga hapat e mëparshëm
+ * dhe prodhon vlerësimin përfundimtar me shpjegime për çdo pikë.
+ */
 export function buildTrustScore({
   headline = "",
   text = "",

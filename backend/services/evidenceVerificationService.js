@@ -1,3 +1,21 @@
+/**
+ * ============================================================================
+ * SHËRBIMI I VERIFIKIMIT TË FAKTEVE DHE PROVAVE (evidenceVerificationService.js)
+ * ============================================================================
+ * Qëllimi:
+ * Ky skedar kryen "Fact-Checking" (verifikim të fakteve).
+ * Nuk mjafton vetëm të shohim a duket lajmi i shkruar bukur apo jo;
+ * ky shërbim shikon a ka prova reale në botë që e mbështesin atë që pretendohet.
+ * 
+ * Si funksionon me fjalë të thjeshta:
+ * 1. ZBULIMI I PRETENDIMEVE: Lexon lajmin dhe nxjerr pohimet kryesore (p.sh. "X tha që...", "Y ndodhi...").
+ * 2. KËRKIMI I PROVAVE: Kërkon në bazën e artikujve të besueshëm (Trusted Corpus) për ngjarje të ngjashme.
+ * 3. KRAHASIMI I FAKTEVE:
+ *    - E Mbështetur (Supported ✓): Burime serioze e konfirmojnë këtë fakt.
+ *    - E Përgënjeshtruar (Contradicted ✗): Faktet provojnë të kundërtën (lajm i rremë).
+ *    - E Paverifikuar (Unverified ⚠): Nuk ka prova të mjaftueshme për ta konfirmuar.
+ */
+
 import { buildHeadlineFromText, extractKeywordCandidates, normalizeWhitespace, splitSentences } from "../utils/text.js";
 import { clampConfidence, normalizeResultLabel } from "../utils/labels.js";
 import { getEvidenceProviders } from "./evidenceProviders/index.js";

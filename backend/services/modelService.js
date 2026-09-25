@@ -1,3 +1,22 @@
+/**
+ * ============================================================================
+ * URA MIDIS JAVASCRIPT DHE INTELIGJENCËS ARTIFICIALE NË PYTHON (modelService.js)
+ * ============================================================================
+ * Qëllimi:
+ * Ky skedar bën lidhjen midis serverit (Node.js/JavaScript) dhe modelit të AI (Python).
+ * 
+ * Pse përdoren të dyja gjuhët me fjalë të thjeshta:
+ * - JavaScript është gjuha më e mirë për të ndërtuar faqen dhe për të menaxhuar kërkesat e shpejta.
+ * - Python është gjuha numër një në botë për Inteligjencën Artificiale dhe modelet matematikore.
+ * 
+ * Si funksionon komunikimi:
+ * 1. Kur përdoruesi kërkon analizën e një lajmi, ky skedar thërret skriptin e Python-it `ml/predict.py`.
+ * 2. Modeli i trajnuar në Python e lexon tekstin dhe llogarit përqindjen e mundësisë (p.sh. 92% REAL).
+ * 3. Rezultati kthehet mbrapsht te serveri ynë.
+ * 4. Nëse për ndonjë arsye Python nuk punon në kompjuter, ky skedar ka një sistem inteligjent rezervë
+ *    (Fallback) me rregulla logjike, që faqja të mos bllokohet kurrë!
+ */
+
 import { spawn } from "child_process";
 import { readFile } from "fs/promises";
 import path from "path";
@@ -8,6 +27,7 @@ import { resolvePythonInvocation } from "../utils/pythonCommand.js";
 import { buildExtractiveSummary, extractKeywordCandidates } from "../utils/text.js";
 import { getHostname, isTrustedSource } from "./articleFetchService.js";
 
+// Vendndodhjet e skedarëve të modelit AI në dosjen "ml"
 const modelMetricsPaths = [path.resolve("ml", "metrics", "metrics.json"), path.resolve("backend", "models", "model_metrics.json")];
 const predictionScriptPath = path.resolve("ml", "predict.py");
 const trainingScriptPath = path.resolve("ml", "train_models.py");

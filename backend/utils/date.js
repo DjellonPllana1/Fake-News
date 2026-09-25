@@ -1,3 +1,13 @@
+/**
+ * ============================================================================
+ * FORMATUESI I DATËS DHE ORËS (date.js)
+ * ============================================================================
+ * Qëllimi:
+ * Ky skedar shfaq datat dhe orët në mënyrë të këndshme dhe të lexueshme për njerëzit:
+ * - formatDateTime: shndërron orën e sistemit në format të qartë (p.sh. "2026-09-25 14:30")
+ * - timeAgo: shfaq kohën relative (p.sh. "5 min ago", "2 hours ago", "3 days ago")
+ */
+
 export function formatDateTime(value = new Date()) {
   return new Date(value).toISOString().slice(0, 16).replace("T", " ");
 }

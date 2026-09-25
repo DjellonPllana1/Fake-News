@@ -1,3 +1,18 @@
+/**
+ * ============================================================================
+ * SHËRBIMI I VEPRIMEVE ADMINISTRATIVE (adminService.js)
+ * ============================================================================
+ * Qëllimi:
+ * Ky skedar përmban logjikën e thellë për të gjitha operacionet administrative:
+ * 
+ * Si funksionon me fjalë të thjeshta:
+ * - Menaxhimi i Përdoruesve: kontrollon a ekziston përdoruesi, parandalon që admini
+ *   t'i heqë vetes rolin admin aksidentalisht, përditëson statusin (Aktiv/Joaktiv).
+ * - Menaxhimi i Lajmeve në Dataset: fshin lajme të vjetra, shkarkon tabelat në CSV.
+ * - Menaxhimi i Analizave: fshin analiza të panevojshme nga historiku.
+ * - Paneli Përmbledhës: bashkon shifrat e përdoruesve, logjeve, dhe modelit AI.
+ */
+
 import { deleteAnalysisById, deleteArticleById, readDatabase, toAnalysisRow, updateUserByEmail } from "../database.js";
 import { AppError } from "../utils/appError.js";
 import { buildCsv } from "../utils/csv.js";

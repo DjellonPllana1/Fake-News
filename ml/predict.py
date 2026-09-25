@@ -1,3 +1,21 @@
+"""
+============================================================================
+PARASHIKUESI ME INTELIGJENCË ARTIFICIALE NË PYTHON (ml/predict.py)
+============================================================================
+Qëllimi:
+Ky është skripti i Python-it që merr tekstin e lajmit nga serveri Node.js
+dhe bën llogaritjen përfundimtare matematikore me anë të Machine Learning (AI).
+
+Si funksionon me fjalë të thjeshta:
+1. Lexon modelin e trajnuar më parë (best_model.pkl) dhe fjalorin matematikor (vectorizer.pkl).
+2. Merr tekstin e artikullit dhe e shndërron në numra (vektorë).
+3. Llogarit përqindjen e mundësisë:
+   - Sa për qind ka gjasa të jetë REAL (I vërtetë)?
+   - Sa për qind ka gjasa të jetë FAKE (I rremë)?
+4. Nëse diferenca është e vogël dhe modeli nuk është i sigurt, e shënon si UNCERTAIN (I pasigurt).
+5. Kthen rezultatin në format JSON te serveri Node.js.
+"""
+
 from __future__ import annotations
 
 import json

@@ -1,3 +1,27 @@
+/**
+ * ============================================================================
+ * SHËRBIMI KRYESOR I ANALIZËS SË LAJMEVE (analysisService.js)
+ * ============================================================================
+ * Qëllimi:
+ * Ky është "truri qendror" i gjithë projektit Verity Lens!
+ * Këtu bashkohen të gjitha teknologjitë për të zbuluar nëse një lajm është i vërtetë apo i rremë.
+ * 
+ * Si funksionon procesi i analizës (Hap pas Hapi):
+ * 1. PËRGATITJA: Nëse përdoruesi dha vetëm një link (URL), sistemi shkon te ajo faqe
+ *    dhe shkarkon tekstin e lajmit, autorin dhe titullin.
+ * 2. INTELIGJENCA ARTIFICIALE (AI/Machine Learning): Modeli i trajnuar me mijëra lajme
+ *    lexon tekstin dhe llogarit sa ngjan ky lajm me lajmet e rreme të njohura.
+ * 3. ANALIZA GJUHËSORE & RREGULLAT (Text Intelligence): Kontrollohet stili i të shkruarit:
+ *    a ka fjalë sensacionale, shkronja të mëdha (bërtitje), klikime mashtruese (clickbait),
+ *    apo mungesë të autorit dhe datës.
+ * 4. KONTROLLI I PROVAVE (Evidence Verification): Sistemi kërkon në bazën e burimeve
+ *    të besueshme për të parë a mbështetet apo përgënjeshtrohet ky lajm nga fakte reale.
+ * 5. NOTA PËRFUNDIMTARE E BESUESHMËRISË (Trust Score 0-100): Duke kombinuar AI-në,
+ *    provat, reputacionin e portalit dhe analizën e tekstit, krijohet një notë përfundimtare.
+ * 6. RUAJTJA DHE REZULTATI: Rezultati ruhet në databazë dhe i dërgohet përdoruesit
+ *    bashkë me një shpjegim të kuptueshëm dhe rekomandim (p.sh. "Kujdes, mos e shpërndaj!").
+ */
+
 import { readDatabase, saveAnalysis, toAnalysisRow } from "../database.js";
 import { AppError } from "../utils/appError.js";
 import { formatDateTime } from "../utils/date.js";
@@ -10,10 +34,17 @@ import { getSourceReputation } from "./sourceReputationService.js";
 import { analyzeArticleIntelligence } from "./textIntelligenceService.js";
 import { buildTrustScore } from "./trustScoreService.js";
 
+/**
+ * Funksion ndihmës: Krijon një kod unik për çdo analizë (p.sh. "AN-1718293-452").
+ */
 function buildAnalysisId() {
   return `AN-${Date.now()}-${Math.round(Math.random() * 1000)}`;
 }
 
+/**
+ * Funksion ndihmës: Krijon një njoftim të shkurtër për përdoruesin
+ * kur analiza përfundon me sukses.
+ */
 function buildNotification(item) {
   return {
     id: Date.now(),
@@ -24,6 +55,13 @@ function buildNotification(item) {
   };
 }
 
+/**
+ * PARAPAMJA E ARTIKULLIT NGA LINKU (URL)
+ * Kur përdoruesi fut linkun e një portali lajmesh, ky funksion:
+ * 1. Shkarkon përmbajtjen nga interneti
+ * 2. Kontrollon reputacionin e atij portali (a njihet si portal serioz apo mashtrues)
+ * 3. Krijon një përmbledhje të shkurtër me 2-3 fjali kryesore
+ */
 export async function fetchArticlePreview(url) {
   const article = await fetchArticleFromUrl(url);
   const sourceReputation = getSourceReputation(article.url || article.source);
@@ -37,7 +75,12 @@ export async function fetchArticlePreview(url) {
   };
 }
 
+/**
+ * FUNKSIONI KRYESOR: ANALIZON ARTIKULLIN
+ * Këtu kalon çdo lajm për t'u shqyrtuar nga të gjitha këndvështrimet.
+ */
 export async function analyzeArticle(payload) {
+  // Gjejmë linkun nëse përdoruesi e ka dhënë si burim
   const resolvedUrl = payload.url || (isHttpUrl(payload.source) ? payload.source : "");
   let finalHeadline = payload.headline;
   let finalText = payload.text;
@@ -46,6 +89,7 @@ export async function analyzeArticle(payload) {
   let finalPublishedAt = payload.publishedAt || "";
   let fetchWarning = "";
 
+  // Nëse përdoruesi dha një link dhe nuk shkroi tekst, e shkarkojmë tekstin automatikisht nga uebi
   if (resolvedUrl && (!finalText || finalText.length < 180)) {
     const fetched = await fetchArticleFromUrl(resolvedUrl);
     finalHeadline = finalHeadline || fetched.title;
@@ -56,24 +100,29 @@ export async function analyzeArticle(payload) {
     fetchWarning = fetched.warning || "";
   }
 
+  // Sigurohemi që teksti të mos jetë tepër i shkurtër (duhen të paktën 40 karaktere)
   if (!finalText || finalText.trim().length < 40) {
-    throw new AppError("There is not enough readable article text to analyze.", 422, "ARTICLE_TEXT_REQUIRED");
+    throw new AppError("Nuk ka mjaftueshëm tekst të lexueshëm për të analizuar artikullin.", 422, "ARTICLE_TEXT_REQUIRED");
   }
 
+  // Kontrollojmë nëse teksti duket si kod programimi apo gabim faqeje në vend të lajmit
   if (looksLikeScriptText(finalText)) {
     throw new AppError(
-      "The submitted text looks like webpage script or boilerplate instead of article content. Paste the readable article text or use a direct article URL.",
+      "Teksti i dërguar nuk duket si artikull lajmesh, por si kod uebi. Ju lutem vendosni tekstin e vërtetë të lajmit.",
       422,
       "ARTICLE_TEXT_INVALID"
     );
   }
 
+  // 1. INTELIGJENCA ARTIFICIALE: Parashikimi matematikor i modelit AI
   const prediction = await predictArticle({
     headline: finalHeadline,
     text: finalText,
     source: finalSource,
     url: resolvedUrl,
   });
+
+  // 2. ANALIZA E TEKSTIT: Kontrollon titullin, klikimet mashtruese, ndjenjat, fjalët kyçe
   const intelligence = analyzeArticleIntelligence({
     headline: finalHeadline,
     text: finalText,
@@ -83,17 +132,23 @@ export async function analyzeArticle(payload) {
     publishedAt: finalPublishedAt,
     mlResult: prediction,
   });
+
+  // 3. KONTROLLI I PROVAVE: Shikon a përputhet lajmi me faktet nga burime të verifikuara
   const evidence = await verifyArticleEvidence({
     headline: finalHeadline,
     text: finalText,
     source: finalSource,
     url: resolvedUrl,
   });
+
+  // 4. PËRSHTATJA ME PROVAT: Korrigjon vlerësimin në varësi të fakteve që u gjetën
   const evidenceAdjusted = applyEvidenceToCredibility({
     baseCredibilityScore: intelligence.credibilityScore,
     currentLabel: intelligence.label,
     evidenceReport: evidence,
   });
+
+  // 5. NOTA E BESUESHMËRISË: Llogarit pikët përfundimtare nga 0 deri në 100
   const trustScore = buildTrustScore({
     headline: finalHeadline,
     text: finalText,
@@ -105,22 +160,29 @@ export async function analyzeArticle(payload) {
     intelligence,
     evidence,
   });
+
+  // Kontrollojmë reputacionin e portalit nga vjen lajmi
   const sourceReputation = getSourceReputation(resolvedUrl || finalSource);
   const finalLabel = normalizeResultLabel(evidenceAdjusted.label);
+
+  // Ndërtojmë shpjegimin përfundimtar në mënyrë që përdoruesi të kuptojë PSE u mor ky vendim
   const finalExplanation = [
     intelligence.explanation,
     evidence.hasEvidence
-      ? `Claim-level verification found ${evidence.supportedClaimsCount} supported, ${evidence.contradictedClaimsCount} contradicted, and ${evidence.unverifiedClaimsCount} unverified claims with ${Math.round(
+      ? `Verifikimi gjeti ${evidence.supportedClaimsCount} pretendime të mbështetura, ${evidence.contradictedClaimsCount} të përgënjeshtruara, dhe ${evidence.unverifiedClaimsCount} të paverifikuara me ${Math.round(
           evidence.evidenceConfidence * 100
-        )}% evidence confidence.`
+        )}% besueshmëri provash.`
       : evidence.message,
   ]
     .filter(Boolean)
     .join(" ");
-  const finalRecommendation = evidence.hasEvidence
-    ? `${intelligence.recommendation} Review the evidence report before sharing the article.`
-    : `${intelligence.recommendation} Unable to verify this claim with trusted-source evidence, so manual review is recommended.`;
 
+  // Këshilla ose rekomandimi për lexuesin
+  const finalRecommendation = evidence.hasEvidence
+    ? `${intelligence.recommendation} Rishikoni raportin e provave para se ta shpërndani artikullin.`
+    : `${intelligence.recommendation} Nuk u gjetën prova të mjaftueshme nga burime të sigurta, prandaj këshillohet kontroll manual.`;
+
+  // Mbledhim të gjitha rezultatet në një paketë të vetme të strukturuar
   const analysis = {
     id: buildAnalysisId(),
     title: finalHeadline || buildHeadlineFromText(finalText),
@@ -187,10 +249,12 @@ export async function analyzeArticle(payload) {
     textPreview: finalText.slice(0, 320),
   };
 
+  // E ruajmë analizën në databazë (përveç nëse është kërkuar të mos ruhet)
   if (payload.save !== false) {
     await saveAnalysis(analysis, buildNotification(analysis));
   }
 
+  // Ia kthejmë rezultatin përfundimtar faqes për t'u shfaqur me grafikë të bukur
   return {
     analysis,
     article: {
@@ -206,6 +270,10 @@ export async function analyzeArticle(payload) {
   };
 }
 
+/**
+ * MERR HISTORIKUN E ANALIZAVE ME MUNDËSI KËRKIMI
+ * Mundëson kërkimin e artikujve të kaluar sipas fjalëve kyçe, autorit, temës ose rezultatit.
+ */
 export async function getAnalysisHistory({ search = "", label = "", limit = 50 } = {}) {
   const database = await readDatabase();
   const filtered = database.analyses
@@ -216,6 +284,7 @@ export async function getAnalysisHistory({ search = "", label = "", limit = 50 }
         return true;
       }
 
+      // Kërkon brenda titullit, përmbledhjes, provave, autorit dhe reputacionit
       const entityText = Object.values(item.entities || {})
         .flatMap((value) => (Array.isArray(value) ? value : []))
         .join(" ");
@@ -252,6 +321,10 @@ export async function getAnalysisHistory({ search = "", label = "", limit = 50 }
   };
 }
 
+/**
+ * MERR ARTIKUJT MODEL NGA DATASETI
+ * Kthen artikujt e ruajtur në bazën e të dhënave që shërbejnë si referencë ose trajnim.
+ */
 export async function getDatasetArticles({ search = "", label = "", limit = 25 } = {}) {
   const database = await readDatabase();
   const articles = database.articles
