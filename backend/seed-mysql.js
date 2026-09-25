@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 /**
  * ============================================================================
  * SKRIPTI I MBUSHJES SË BAZËS SË TË DHËNAVE MYSQL (seed-mysql.js)
@@ -127,3 +128,6 @@ try {
 } finally {
   await connection.end();
 }
+=======
+import "./database/seed.js";
+>>>>>>> e5486132ea595ac597196f61296b9a679ed1dcba

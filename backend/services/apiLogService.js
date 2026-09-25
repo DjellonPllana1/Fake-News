@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 /**
  * ============================================================================
  * SHËRBIMI I REGJISTRIMIT TË KËRKESAVE (apiLogService.js)
@@ -17,14 +18,20 @@
  */
 
 // Numri maksimal i kërkesave që mbahen në kujtesë
+=======
+import { isDatabaseEnabled } from "../config/database.js";
+import { LogRepository } from "../repositories/LogRepository.js";
+
+>>>>>>> e5486132ea595ac597196f61296b9a679ed1dcba
 const MAX_API_LOGS = 250;
 const apiLogs = [];
+const logRepository = new LogRepository();
 
 /**
  * Ruan një kërkesë të re në krye të listës (më të rejat të parat).
  */
 export function recordApiLog(entry = {}) {
-  apiLogs.unshift({
+  const logEntry = {
     id: `${Date.now()}-${Math.round(Math.random() * 1000)}`,
     timestamp: new Date().toISOString(),
     method: entry.method || "GET",
@@ -34,7 +41,18 @@ export function recordApiLog(entry = {}) {
     userEmail: entry.userEmail || "Anonymous",
     userRole: entry.userRole || "Anonymous",
     ip: entry.ip || "",
-  });
+  };
+
+  if (isDatabaseEnabled()) {
+    logRepository.create(logEntry).catch((error) => {
+      if (process.env.DEBUG_DB === "1") {
+        console.warn("Unable to persist API log.", error.message);
+      }
+    });
+    return;
+  }
+
+  apiLogs.unshift(logEntry);
 
   // Nëse tejkalohet kufiri prej 250, heqim më të vjetrat
   if (apiLogs.length > MAX_API_LOGS) {
@@ -42,9 +60,20 @@ export function recordApiLog(entry = {}) {
   }
 }
 
+<<<<<<< HEAD
 /**
  * Kthen listën e kërkesave të fundit për t'ia shfaqur administratorit në ekran.
  */
 export function getApiLogs(limit = 100) {
   return apiLogs.slice(0, Math.max(1, Math.min(Number(limit || 100), MAX_API_LOGS)));
+=======
+export async function getApiLogs(limit = 100) {
+  const normalizedLimit = Math.max(1, Math.min(Number(limit || 100), MAX_API_LOGS));
+
+  if (isDatabaseEnabled()) {
+    return logRepository.list(normalizedLimit);
+  }
+
+  return apiLogs.slice(0, normalizedLimit);
+>>>>>>> e5486132ea595ac597196f61296b9a679ed1dcba
 }

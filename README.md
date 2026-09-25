@@ -70,7 +70,7 @@ Verity Lens is a production-style AI fake news detection platform built with Rea
 - Searchable history with PDF, CSV, and JSON export
 - Executive dashboard analytics with live statistics, animated counters, prediction mix, confidence distribution, timelines, model comparison, suspicious keywords, domain analytics, entity trends, weekly/monthly rollups, recent activity, model version, and system status
 - System diagnostics page and health endpoint
-- JSON fallback database with optional MySQL persistence
+- MySQL primary database with optional JSON fallback
 - Retrain model button from the UI
 
 ## Architecture
@@ -136,7 +136,12 @@ npm install
 Copy `.env.example` to `.env` and adjust values if needed.
 
 ```env
-DB_CLIENT=json
+DB_ENABLED=true
+DB_HOST=localhost
+DB_PORT=3306
+DB_USER=root
+DB_PASSWORD=
+DB_NAME=fake_news_ai
 PORT=4000
 CONFIDENCE_THRESHOLD=0.72
 ML_WEIGHT=0.68
@@ -159,7 +164,60 @@ TRUST_SCORE_HIGH_THRESHOLD=75
 TRUST_SCORE_MEDIUM_THRESHOLD=55
 ```
 
-### 3. Install Python dependencies
+`DB_ENABLED=true` is the primary production-style path and uses MySQL through `mysql2/promise`.
+Set `DB_ENABLED=false` only when you intentionally want the legacy local JSON fallback at `backend/database.json`.
+
+### 3. Initialize MySQL
+
+Start MySQL locally, then run:
+
+```bash
+npm run db:setup
+```
+
+This command runs:
+
+```bash
+npm run db:migrate
+npm run db:seed
+```
+
+The migration creates these application tables:
+
+- `users`
+- `analyses`
+- `history`
+- `model_metrics`
+- `api_logs`
+- `training_jobs`
+- `system_events`
+- `articles`
+- `notifications`
+
+The seed command creates an admin account, a demo account, imports existing dataset articles from `backend/database.json`, and loads sample analyses.
+
+Default seeded credentials:
+
+```text
+admin@demo.com / password123
+demo@demo.com / password123
+```
+
+To verify MySQL is active:
+
+```bash
+npm run backend
+```
+
+Then open:
+
+```text
+http://127.0.0.1:4000/api/health
+```
+
+The JSON response should include `"database":"mysql"`.
+
+### 4. Install Python dependencies
 
 ```bash
 pip install -r requirements.txt
@@ -167,7 +225,7 @@ pip install -r requirements.txt
 
 If you want to force a specific interpreter, set `PYTHON_BIN` in `.env`.
 
-### 4. Add datasets
+### 5. Add datasets
 
 Verity Lens does not auto-download external datasets. Place the raw files in these exact locations:
 
@@ -188,7 +246,7 @@ Recommended download locations:
 - FEVER Dataset:
   [FEVER Dataset](https://fever.ai/dataset/fever.html)
 
-### 5. Normalize and merge datasets
+### 6. Normalize and merge datasets
 
 ```bash
 npm run merge:datasets
@@ -202,7 +260,7 @@ This step:
 - writes `ml/metrics/dataset_report.json`
 - writes `ml/datasets/processed/final_dataset.csv`
 
-### 6. Train the models
+### 7. Train the models
 
 ```bash
 npm run train:models
@@ -223,7 +281,7 @@ Compatibility copies are also written to:
 - `backend/models/model_metrics.json`
 - `backend/models/training_report.json`
 
-### 7. Start the platform
+### 8. Start the platform
 
 ```bash
 npm run dev
@@ -247,8 +305,9 @@ See [DEPLOYMENT.md](./DEPLOYMENT.md) for the full deployment guide.
 
 ## Demo Login
 
-- Email: `dion@demo.com`
-- Password: `password123`
+- Admin: `admin@demo.com` / `password123`
+- Demo analyst: `demo@demo.com` / `password123`
+- Existing imported demo users, such as `dion@demo.com`, also keep `password123`.
 
 ## Commands
 
@@ -256,6 +315,9 @@ See [DEPLOYMENT.md](./DEPLOYMENT.md) for the full deployment guide.
 - `npm run backend`
 - `npm run build`
 - `npm run lint`
+- `npm run db:migrate`
+- `npm run db:seed`
+- `npm run db:setup`
 - `npm run seed`
 - `npm run seed:mysql`
 - `npm run merge:datasets`
@@ -299,31 +361,6 @@ PowerShell example:
 
 ```bash
 npm run train:nb
-```
-
-## MySQL Setup
-
-### 1. Create the schema
-
-```bash
-mysql -u root -p < backend/schema.sql
-```
-
-### 2. Update `.env`
-
-```env
-DB_CLIENT=mysql
-DB_HOST=localhost
-DB_PORT=3306
-DB_USER=root
-DB_PASSWORD=your_password
-DB_NAME=fake_news_ui
-```
-
-### 3. Seed MySQL
-
-```bash
-npm run seed:mysql
 ```
 
 ## How the final score works

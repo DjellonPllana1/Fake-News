@@ -3,7 +3,7 @@
     "name": "Fake News Detection Local Database",
     "version": 1,
     "seededAt": "2026-05-19T13:47:28.728Z",
-    "lastAnalysisAt": "2026-07-07 13:06",
+    "lastAnalysisAt": "2026-07-07 14:11",
     "sourceFiles": [
       "C:\\tmp\\fake-news-seed-true\\True.csv",
       "C:\\tmp\\fake-news-seed-fake\\Fake.csv"
@@ -12612,6 +12612,1233 @@
     }
   ],
   "analyses": [
+    {
+      "id": "AN-1783433494512-73",
+      "title": "Fake News - BBC News",
+      "source": "www.bbc.com",
+      "url": "https://www.bbc.com/news/topics/cjxv13v27dyt",
+      "label": "UNCERTAIN",
+      "prediction": "UNCERTAIN",
+      "confidence": 61,
+      "confidenceScore": 0.6089,
+      "model": "Heuristic Fallback Analyzer",
+      "date": "2026-07-07 14:11",
+      "language": "English",
+      "languageInfo": {
+        "code": "en",
+        "name": "English",
+        "confidence": 1,
+        "distribution": [
+          {
+            "code": "en",
+            "name": "English",
+            "score": 17
+          }
+        ],
+        "sampleSize": 158
+      },
+      "riskLevel": "MEDIUM",
+      "explanation": "The UNCERTAIN decision combined the Heuristic Fallback Analyzer model (fallback-1) with a rule-based credibility review. The model estimated 24% fake likelihood, the rule engine contributed 18% risk, and the base credibility score before evidence verification and trust weighting is 78/100. Detected language: English. Article category: Technology. Influential keywords: news, fake, online, home, russian, network. Highest-impact rule signals: missing author, missing publication date, article length. Claim-level verification found 1 supported, 0 contradicted, and 2 unverified claims with 13% evidence confidence.",
+      "recommendation": "Treat this article as unverified for now. Compare it with at least two trusted publishers, inspect quoted evidence, and confirm metadata before relying on it. Missing: author and publication date. Review the evidence report before sharing the article.",
+      "summary": "A number of candidates speak about how social media affected the election campaign. Proposals to convert a former care home into a home of multiple occupancy have sparked controversy. Sir Sadiq Khan claims London is being targeted with disinformation portraying it as a city \"in decline\". Steve Backshall's tips for spotting AI-generated animals vids If you suspect an animal vid might be AI, check the following things.",
+      "keywords": [
+        "fake news",
+        "news",
+        "fake",
+        "online",
+        "home",
+        "russian",
+        "fake news network",
+        "russian fake news",
+        "network",
+        "news network",
+        "russian fake",
+        "number"
+      ],
+      "keywordMetadata": {
+        "items": [
+          {
+            "term": "fake news",
+            "score": 90,
+            "source": "phrase",
+            "rank": 9
+          },
+          {
+            "term": "news",
+            "score": 80,
+            "source": "model",
+            "rank": 1
+          },
+          {
+            "term": "fake",
+            "score": 72,
+            "source": "model",
+            "rank": 2
+          },
+          {
+            "term": "online",
+            "score": 64,
+            "source": "model",
+            "rank": 3
+          },
+          {
+            "term": "home",
+            "score": 56,
+            "source": "model",
+            "rank": 4
+          },
+          {
+            "term": "russian",
+            "score": 48,
+            "source": "model",
+            "rank": 5
+          },
+          {
+            "term": "fake news network",
+            "score": 45,
+            "source": "phrase",
+            "rank": 10
+          },
+          {
+            "term": "russian fake news",
+            "score": 45,
+            "source": "phrase",
+            "rank": 11
+          },
+          {
+            "term": "network",
+            "score": 40,
+            "source": "model",
+            "rank": 6
+          },
+          {
+            "term": "news network",
+            "score": 36,
+            "source": "phrase",
+            "rank": 12
+          },
+          {
+            "term": "russian fake",
+            "score": 36,
+            "source": "phrase",
+            "rank": 13
+          },
+          {
+            "term": "number",
+            "score": 32,
+            "source": "model",
+            "rank": 7
+          }
+        ],
+        "keyPhrases": [
+          "fake news",
+          "fake news network",
+          "russian fake news",
+          "news network",
+          "russian fake",
+          "2026 milan cortina"
+        ],
+        "keywords": [
+          "fake news",
+          "news",
+          "fake",
+          "online",
+          "home",
+          "russian",
+          "fake news network",
+          "russian fake news",
+          "network",
+          "news network",
+          "russian fake",
+          "number"
+        ]
+      },
+      "influentialKeywords": [
+        {
+          "term": "news",
+          "weight": 0.8,
+          "direction": "supports"
+        },
+        {
+          "term": "fake",
+          "weight": 0.72,
+          "direction": "supports"
+        },
+        {
+          "term": "online",
+          "weight": 0.64,
+          "direction": "supports"
+        },
+        {
+          "term": "home",
+          "weight": 0.56,
+          "direction": "supports"
+        },
+        {
+          "term": "russian",
+          "weight": 0.48,
+          "direction": "supports"
+        },
+        {
+          "term": "network",
+          "weight": 0.4,
+          "direction": "supports"
+        },
+        {
+          "term": "number",
+          "weight": 0.32,
+          "direction": "supports"
+        },
+        {
+          "term": "candidates",
+          "weight": 0.24,
+          "direction": "supports"
+        }
+      ],
+      "probabilities": {
+        "REAL": 0.6089,
+        "FAKE": 0.1711,
+        "UNCERTAIN": 0.22
+      },
+      "modelProbabilities": {
+        "REAL": 0.76,
+        "FAKE": 0.24,
+        "UNCERTAIN": 0
+      },
+      "binaryModelProbabilities": {
+        "REAL": 0.76,
+        "FAKE": 0.24
+      },
+      "warning": "",
+      "articleId": null,
+      "articleText": "A number of candidates speak about how social media affected the election campaign. Proposals to convert a former care home into a home of multiple occupancy have sparked controversy. Sir Sadiq Khan claims London is being targeted with disinformation portraying it as a city \"in decline\". Steve Backshall's tips for spotting AI-generated animals vids If you suspect an animal vid might be AI, check the following things. Russian fake news network targets Winter Olympics A Russian fake news network is targeting Ukrainian athletes at the 2026 Milan Cortina Olympic Games. Guy's and St Thomas' NHS Trust says online videos falsely show clinicians promoting weight loss patches. Councils discuss the challenges as they seek to stop the spread of fake news online. Staff at South Tyneside Council are being advised when to hide or correct misinformation online. Journalist Ben Black was \"shocked\" to discover his fake news from five years ago used by AI.",
+      "textPreview": "A number of candidates speak about how social media affected the election campaign. Proposals to convert a former care home into a home of multiple occupancy have sparked controversy. Sir Sadiq Khan claims London is being targeted with disinformation portraying it as a city \"in decline\". Steve Backshall's tips for spot",
+      "author": "",
+      "publishedAt": "",
+      "credibilityScore": 79,
+      "baseCredibilityScore": 78,
+      "evidenceAdjustedCredibilityScore": 83,
+      "trustScore": 79,
+      "trustLevel": "High credibility",
+      "trustExplanation": "Trust Score 79/100 indicates high credibility. Reasons: The ML model strongly favors a legitimate article pattern; Reliable domain; Little sensational language detected; The headline avoids clickbait cues.",
+      "trustReasons": [
+        "The ML model strongly favors a legitimate article pattern",
+        "Reliable domain",
+        "Little sensational language detected",
+        "The headline avoids clickbait cues"
+      ],
+      "trustSignals": [
+        {
+          "key": "mlProbability",
+          "title": "Machine Learning probability",
+          "score": 76,
+          "weight": 1.6,
+          "evidence": "76% REAL probability",
+          "positiveReason": "The ML model strongly favors a legitimate article pattern",
+          "cautionReason": "The ML model assigns low credibility to the article language"
+        },
+        {
+          "key": "clickbaitDetection",
+          "title": "Clickbait detection",
+          "score": 100,
+          "weight": 0.9,
+          "evidence": "Fake News - BBC News",
+          "positiveReason": "The headline avoids clickbait cues",
+          "cautionReason": "The headline uses clickbait-style phrasing"
+        },
+        {
+          "key": "domainReputation",
+          "title": "Domain reputation",
+          "score": 92,
+          "weight": 1.1,
+          "evidence": "bbc.com | Center | United Kingdom | High",
+          "positiveReason": "Reliable domain",
+          "cautionReason": "Domain reputation is not strong enough to build high trust."
+        },
+        {
+          "key": "writingQuality",
+          "title": "Writing quality",
+          "score": 88,
+          "weight": 1,
+          "evidence": "153 words, 9 sentences, avg sentence length 17.0 words",
+          "positiveReason": "Good writing quality",
+          "cautionReason": "Writing quality appears weak or inconsistent"
+        },
+        {
+          "key": "sensationalLanguage",
+          "title": "Sensational language",
+          "score": 100,
+          "weight": 1,
+          "evidence": "0% sensational signal",
+          "positiveReason": "Little sensational language detected",
+          "cautionReason": "Sensational language reduces trust"
+        },
+        {
+          "key": "emotionalLanguage",
+          "title": "Emotional language",
+          "score": 100,
+          "weight": 0.7,
+          "evidence": "0% emotional intensity",
+          "positiveReason": "Neutral language",
+          "cautionReason": "Emotional language reduces credibility"
+        },
+        {
+          "key": "authorPresence",
+          "title": "Author presence",
+          "score": 28,
+          "weight": 0.5,
+          "evidence": "No author provided",
+          "positiveReason": "Author information is available",
+          "cautionReason": "No author is provided"
+        },
+        {
+          "key": "publicationDate",
+          "title": "Publication date",
+          "score": 34,
+          "weight": 0.5,
+          "evidence": "No publication date provided",
+          "positiveReason": "Publication date is available",
+          "cautionReason": "Publication date is missing"
+        },
+        {
+          "key": "articleLength",
+          "title": "Article length",
+          "score": 50,
+          "weight": 0.6,
+          "evidence": "153 words",
+          "positiveReason": "Article length provides enough context",
+          "cautionReason": "Article length is too short or atypical"
+        },
+        {
+          "key": "sourceReliability",
+          "title": "Source reliability",
+          "score": 75,
+          "weight": 1.2,
+          "evidence": "High reliability | 1 trusted source found",
+          "positiveReason": "Trusted source support is available",
+          "cautionReason": "Trusted-source support is limited."
+        }
+      ],
+      "trustWeights": {
+        "mlProbability": 1.6,
+        "clickbaitDetection": 0.9,
+        "domainReputation": 1.1,
+        "writingQuality": 1,
+        "sensationalLanguage": 1,
+        "emotionalLanguage": 0.7,
+        "authorPresence": 0.5,
+        "publicationDate": 0.5,
+        "articleLength": 0.6,
+        "sourceReliability": 1.2
+      },
+      "sourceReputation": {
+        "known": true,
+        "domain": "bbc.com",
+        "trustScore": 92,
+        "badge": "Trusted",
+        "badgeTone": "trusted",
+        "politicalBias": "Center",
+        "country": "United Kingdom",
+        "reliability": "High",
+        "factCheckingHistory": "BBC reporting generally shows strong verification discipline with transparent corrections and editorial standards.",
+        "notes": "",
+        "matchedDomain": "bbc.com",
+        "aliases": [
+          "bbc",
+          "bbc.co.uk"
+        ]
+      },
+      "modelVersion": "fallback-1",
+      "modelGeneratedAt": "",
+      "suspiciousSentences": [],
+      "ruleFindings": [
+        {
+          "id": "clickbait_title",
+          "title": "Clickbait title",
+          "score": 0,
+          "weightedScore": 0,
+          "weight": 1.1,
+          "severity": "none",
+          "message": "The headline does not show strong clickbait cues.",
+          "evidence": "Fake News - BBC News",
+          "recommendation": "Compare the title with how trusted outlets phrase the same event."
+        },
+        {
+          "id": "excessive_capitalization",
+          "title": "Excessive capitalization",
+          "score": 0,
+          "weightedScore": 0,
+          "weight": 0.9,
+          "severity": "none",
+          "message": "Capitalization appears normal.",
+          "evidence": "5% uppercase letter ratio",
+          "recommendation": "Prefer calmer reporting styles over dramatic all-caps emphasis."
+        },
+        {
+          "id": "excessive_punctuation",
+          "title": "Excessive punctuation",
+          "score": 0,
+          "weightedScore": 0,
+          "weight": 0.8,
+          "severity": "none",
+          "message": "Punctuation usage appears normal.",
+          "evidence": "0 exclamation/question marks",
+          "recommendation": "Look for articles that rely on evidence more than emotional punctuation."
+        },
+        {
+          "id": "emotional_language",
+          "title": "Emotional language",
+          "score": 0,
+          "weightedScore": 0,
+          "weight": 1,
+          "severity": "none",
+          "message": "The article does not rely heavily on emotional wording.",
+          "evidence": "0 emotional language hits",
+          "recommendation": "Cross-check emotionally charged claims with source documents or neutral coverage."
+        },
+        {
+          "id": "sensational_phrases",
+          "title": "Sensational phrases",
+          "score": 0,
+          "weightedScore": 0,
+          "weight": 1.2,
+          "severity": "none",
+          "message": "No strong sensational phrases were detected.",
+          "evidence": "0 sensational phrase matches",
+          "recommendation": "Treat sensational framing as a signal to verify before sharing."
+        },
+        {
+          "id": "suspicious_domain",
+          "title": "Suspicious domain",
+          "score": 0,
+          "weightedScore": 0,
+          "weight": 1.15,
+          "severity": "none",
+          "message": "The source domain is listed as trusted in the source reputation registry.",
+          "evidence": "bbc.com | Center | United Kingdom | High",
+          "recommendation": "Inspect the publisher page, ownership, and editorial standards before relying on the article."
+        },
+        {
+          "id": "article_length",
+          "title": "Article length",
+          "score": 0.55,
+          "weightedScore": 0.41250000000000003,
+          "weight": 0.75,
+          "severity": "medium",
+          "message": "The article is short enough to limit context and evidence.",
+          "evidence": "153 words",
+          "recommendation": "Short articles should be checked against fuller coverage from reputable sources."
+        },
+        {
+          "id": "missing_author",
+          "title": "Missing author",
+          "score": 0.7,
+          "weightedScore": 0.5599999999999999,
+          "weight": 0.8,
+          "severity": "medium",
+          "message": "No author information was supplied.",
+          "evidence": "No author found",
+          "recommendation": "Anonymous or unattributed stories deserve extra scrutiny."
+        },
+        {
+          "id": "missing_publication_date",
+          "title": "Missing publication date",
+          "score": 0.65,
+          "weightedScore": 0.52,
+          "weight": 0.8,
+          "severity": "medium",
+          "message": "No publication date was supplied.",
+          "evidence": "No publication date found",
+          "recommendation": "Check when the story was published before relying on it or resharing it."
+        }
+      ],
+      "sentiment": {
+        "label": "negative",
+        "score": -0.314,
+        "positiveCount": 0,
+        "negativeCount": 4,
+        "emotionalIntensity": 0
+      },
+      "entities": {
+        "people": [
+          "Fake News",
+          "Sir Sadiq Khan",
+          "Steve Backshall",
+          "Winter Olympics",
+          "Milan Cortina Olympic",
+          "St Thomas",
+          "Journalist Ben Black"
+        ],
+        "organizations": [
+          "South Tyneside Council"
+        ],
+        "locations": [],
+        "dates": [],
+        "sources": [
+          "bbc.com"
+        ],
+        "counts": {
+          "people": 7,
+          "organizations": 1,
+          "locations": 0,
+          "dates": 0,
+          "sources": 1,
+          "total": 9
+        }
+      },
+      "topicDetection": {
+        "primary": {
+          "id": "technology",
+          "label": "Technology & Digital",
+          "category": "Technology",
+          "score": 2.25,
+          "confidence": 0.429,
+          "strength": 1
+        },
+        "secondary": [
+          {
+            "id": "politics",
+            "label": "Politics & Government",
+            "category": "Politics",
+            "score": 1.5,
+            "confidence": 0.286,
+            "strength": 0.667
+          },
+          {
+            "id": "society",
+            "label": "Society & Culture",
+            "category": "Society",
+            "score": 1.5,
+            "confidence": 0.286,
+            "strength": 0.667
+          }
+        ],
+        "distribution": [
+          {
+            "id": "technology",
+            "label": "Technology & Digital",
+            "category": "Technology",
+            "score": 2.25,
+            "confidence": 0.429,
+            "strength": 1
+          },
+          {
+            "id": "politics",
+            "label": "Politics & Government",
+            "category": "Politics",
+            "score": 1.5,
+            "confidence": 0.286,
+            "strength": 0.667
+          },
+          {
+            "id": "society",
+            "label": "Society & Culture",
+            "category": "Society",
+            "score": 1.5,
+            "confidence": 0.286,
+            "strength": 0.667
+          }
+        ]
+      },
+      "articleCategory": {
+        "label": "Technology",
+        "confidence": 0.429,
+        "rationale": "The article most strongly aligns with technology & digital signals from the headline and body.",
+        "primaryTopic": "Technology & Digital",
+        "secondaryTopics": [
+          "Politics & Government",
+          "Society & Culture"
+        ]
+      },
+      "readingComplexity": {
+        "level": "Advanced",
+        "readingTimeMinutes": 1,
+        "fleschReadingEase": 48,
+        "fleschKincaidGrade": 10.7,
+        "averageSentenceLength": 16.9,
+        "averageWordLength": 5.1,
+        "lexicalDiversity": 0.809,
+        "syllablesPerWord": 1.67
+      },
+      "writingStyle": {
+        "label": "Straight News",
+        "confidence": 0.448,
+        "rationale": "Straight News is the dominant writing style based on tone, sentence structure, attribution markers, and intensity cues.",
+        "distribution": [
+          {
+            "style": "Straight News",
+            "score": 0.448
+          },
+          {
+            "style": "Analytical",
+            "score": 0.289
+          },
+          {
+            "style": "Conversational",
+            "score": 0.133
+          },
+          {
+            "style": "Opinionated",
+            "score": 0.13
+          },
+          {
+            "style": "Sensational",
+            "score": 0
+          }
+        ],
+        "indicators": [
+          "2 quoted statement blocks"
+        ]
+      },
+      "emotion": {
+        "dominant": "sadness",
+        "secondary": null,
+        "intensity": 0.144,
+        "distribution": [
+          {
+            "emotion": "sadness",
+            "count": 1,
+            "score": 0.144
+          },
+          {
+            "emotion": "trust",
+            "count": 0,
+            "score": 0
+          },
+          {
+            "emotion": "fear",
+            "count": 0,
+            "score": 0
+          },
+          {
+            "emotion": "anger",
+            "count": 0,
+            "score": 0
+          },
+          {
+            "emotion": "joy",
+            "count": 0,
+            "score": 0
+          },
+          {
+            "emotion": "surprise",
+            "count": 0,
+            "score": 0
+          },
+          {
+            "emotion": "disgust",
+            "count": 0,
+            "score": 0
+          }
+        ],
+        "summary": "The language is primarily driven by sadness cues."
+      },
+      "nlpMetadata": {
+        "language": {
+          "code": "en",
+          "name": "English",
+          "confidence": 1,
+          "distribution": [
+            {
+              "code": "en",
+              "name": "English",
+              "score": 17
+            }
+          ],
+          "sampleSize": 158
+        },
+        "namedEntities": {
+          "people": [
+            "Fake News",
+            "Sir Sadiq Khan",
+            "Steve Backshall",
+            "Winter Olympics",
+            "Milan Cortina Olympic",
+            "St Thomas",
+            "Journalist Ben Black"
+          ],
+          "organizations": [
+            "South Tyneside Council"
+          ],
+          "locations": [],
+          "dates": [],
+          "sources": [
+            "bbc.com"
+          ],
+          "counts": {
+            "people": 7,
+            "organizations": 1,
+            "locations": 0,
+            "dates": 0,
+            "sources": 1,
+            "total": 9
+          }
+        },
+        "keywordExtraction": {
+          "items": [
+            {
+              "term": "fake news",
+              "score": 90,
+              "source": "phrase",
+              "rank": 9
+            },
+            {
+              "term": "news",
+              "score": 80,
+              "source": "model",
+              "rank": 1
+            },
+            {
+              "term": "fake",
+              "score": 72,
+              "source": "model",
+              "rank": 2
+            },
+            {
+              "term": "online",
+              "score": 64,
+              "source": "model",
+              "rank": 3
+            },
+            {
+              "term": "home",
+              "score": 56,
+              "source": "model",
+              "rank": 4
+            },
+            {
+              "term": "russian",
+              "score": 48,
+              "source": "model",
+              "rank": 5
+            },
+            {
+              "term": "fake news network",
+              "score": 45,
+              "source": "phrase",
+              "rank": 10
+            },
+            {
+              "term": "russian fake news",
+              "score": 45,
+              "source": "phrase",
+              "rank": 11
+            },
+            {
+              "term": "network",
+              "score": 40,
+              "source": "model",
+              "rank": 6
+            },
+            {
+              "term": "news network",
+              "score": 36,
+              "source": "phrase",
+              "rank": 12
+            },
+            {
+              "term": "russian fake",
+              "score": 36,
+              "source": "phrase",
+              "rank": 13
+            },
+            {
+              "term": "number",
+              "score": 32,
+              "source": "model",
+              "rank": 7
+            }
+          ],
+          "keyPhrases": [
+            "fake news",
+            "fake news network",
+            "russian fake news",
+            "news network",
+            "russian fake",
+            "2026 milan cortina"
+          ],
+          "keywords": [
+            "fake news",
+            "news",
+            "fake",
+            "online",
+            "home",
+            "russian",
+            "fake news network",
+            "russian fake news",
+            "network",
+            "news network",
+            "russian fake",
+            "number"
+          ]
+        },
+        "topicDetection": {
+          "primary": {
+            "id": "technology",
+            "label": "Technology & Digital",
+            "category": "Technology",
+            "score": 2.25,
+            "confidence": 0.429,
+            "strength": 1
+          },
+          "secondary": [
+            {
+              "id": "politics",
+              "label": "Politics & Government",
+              "category": "Politics",
+              "score": 1.5,
+              "confidence": 0.286,
+              "strength": 0.667
+            },
+            {
+              "id": "society",
+              "label": "Society & Culture",
+              "category": "Society",
+              "score": 1.5,
+              "confidence": 0.286,
+              "strength": 0.667
+            }
+          ],
+          "distribution": [
+            {
+              "id": "technology",
+              "label": "Technology & Digital",
+              "category": "Technology",
+              "score": 2.25,
+              "confidence": 0.429,
+              "strength": 1
+            },
+            {
+              "id": "politics",
+              "label": "Politics & Government",
+              "category": "Politics",
+              "score": 1.5,
+              "confidence": 0.286,
+              "strength": 0.667
+            },
+            {
+              "id": "society",
+              "label": "Society & Culture",
+              "category": "Society",
+              "score": 1.5,
+              "confidence": 0.286,
+              "strength": 0.667
+            }
+          ]
+        },
+        "articleCategory": {
+          "label": "Technology",
+          "confidence": 0.429,
+          "rationale": "The article most strongly aligns with technology & digital signals from the headline and body.",
+          "primaryTopic": "Technology & Digital",
+          "secondaryTopics": [
+            "Politics & Government",
+            "Society & Culture"
+          ]
+        },
+        "sentiment": {
+          "label": "negative",
+          "score": -0.314,
+          "positiveCount": 0,
+          "negativeCount": 4,
+          "emotionalIntensity": 0
+        },
+        "readingComplexity": {
+          "level": "Advanced",
+          "readingTimeMinutes": 1,
+          "fleschReadingEase": 48,
+          "fleschKincaidGrade": 10.7,
+          "averageSentenceLength": 16.9,
+          "averageWordLength": 5.1,
+          "lexicalDiversity": 0.809,
+          "syllablesPerWord": 1.67
+        },
+        "writingStyle": {
+          "label": "Straight News",
+          "confidence": 0.448,
+          "rationale": "Straight News is the dominant writing style based on tone, sentence structure, attribution markers, and intensity cues.",
+          "distribution": [
+            {
+              "style": "Straight News",
+              "score": 0.448
+            },
+            {
+              "style": "Analytical",
+              "score": 0.289
+            },
+            {
+              "style": "Conversational",
+              "score": 0.133
+            },
+            {
+              "style": "Opinionated",
+              "score": 0.13
+            },
+            {
+              "style": "Sensational",
+              "score": 0
+            }
+          ],
+          "indicators": [
+            "2 quoted statement blocks"
+          ]
+        },
+        "emotion": {
+          "dominant": "sadness",
+          "secondary": null,
+          "intensity": 0.144,
+          "distribution": [
+            {
+              "emotion": "sadness",
+              "count": 1,
+              "score": 0.144
+            },
+            {
+              "emotion": "trust",
+              "count": 0,
+              "score": 0
+            },
+            {
+              "emotion": "fear",
+              "count": 0,
+              "score": 0
+            },
+            {
+              "emotion": "anger",
+              "count": 0,
+              "score": 0
+            },
+            {
+              "emotion": "joy",
+              "count": 0,
+              "score": 0
+            },
+            {
+              "emotion": "surprise",
+              "count": 0,
+              "score": 0
+            },
+            {
+              "emotion": "disgust",
+              "count": 0,
+              "score": 0
+            }
+          ],
+          "summary": "The language is primarily driven by sadness cues."
+        }
+      },
+      "articleStats": {
+        "wordCount": 153,
+        "sentenceCount": 9,
+        "paragraphCount": 1,
+        "titleLength": 20,
+        "hasAuthor": false,
+        "hasPublicationDate": false,
+        "sourceHost": "bbc.com",
+        "trustedSource": true,
+        "sourceReputationBadge": "Trusted",
+        "sourceReliability": "High",
+        "readingTimeMinutes": 1,
+        "lexicalDiversity": 0.809
+      },
+      "credibility": {
+        "score": 78,
+        "mlFakeProbability": 0.24,
+        "ruleRiskScore": 0.1756,
+        "mlWeight": 0.68,
+        "ruleWeight": 0.32
+      },
+      "evidence": {
+        "status": "verified",
+        "hasEvidence": true,
+        "title": "Fake News - BBC News",
+        "mainClaims": [
+          "Fake News - BBC News",
+          "Russian fake news network targets Winter Olympics A Russian fake news network is targeting Ukrainian athletes at the 2026 Milan Cortina Olympic Games.",
+          "Journalist Ben Black was \"shocked\" to discover his fake news from five years ago used by AI."
+        ],
+        "claimAnalyses": [
+          {
+            "id": "claim-1",
+            "index": 1,
+            "claim": "Fake News - BBC News",
+            "confidenceScore": 0.3862,
+            "confidence": 39,
+            "similarityScore": 0.2095,
+            "evidence": [
+              {
+                "providerId": "local_trusted_corpus",
+                "providerName": "Local Trusted Corpus",
+                "source": "Reuters dataset",
+                "title": "Trump on Twitter (Dec 21) - Tax Cuts, Home sales",
+                "publishedAt": "2017-12-20",
+                "similarityScore": 0.2095,
+                "stance": "SUPPORT",
+                "summary": "The following statements were posted to the verified Twitter accounts of U.S. President Donald Trump, @realDonaldTrump and @POTUS.",
+                "snippet": "The many Fake News Hate Shows should study your formula for success!"
+              },
+              {
+                "providerId": "local_trusted_corpus",
+                "providerName": "Local Trusted Corpus",
+                "source": "Reuters dataset",
+                "title": "Factbox: Trump on Twitter (November 29) - Matt Lauer, North Korea, Tax Cuts",
+                "publishedAt": "2017-11-28",
+                "similarityScore": 0.2095,
+                "stance": "SUPPORT",
+                "summary": "The following statements were posted to the verified Twitter accounts of U.S. President Donald Trump, @realDonaldTrump and @POTUS.",
+                "snippet": "[0632 EST] - Great, and we should boycott Fake News CNN."
+              }
+            ],
+            "evidenceCount": 2,
+            "supportingArticlesCount": 2,
+            "contradictingArticlesCount": 0,
+            "relatedArticlesCount": 0,
+            "trustedSourcesFound": [
+              "Reuters dataset"
+            ],
+            "explanation": "Trusted coverage aligns with this claim. 2 supporting article(s) were found with 39% confidence and no stronger contradictory signal.",
+            "verdict": "SUPPORTED",
+            "finalVerdict": "Supported",
+            "verdictSymbol": "✓",
+            "providersTried": [
+              {
+                "id": "local_trusted_corpus",
+                "name": "Local Trusted Corpus",
+                "status": "ok",
+                "claimIndex": 0
+              }
+            ]
+          },
+          {
+            "id": "claim-2",
+            "index": 2,
+            "claim": "Russian fake news network targets Winter Olympics A Russian fake news network is targeting Ukrainian athletes at the 2026 Milan Cortina Olympic Games.",
+            "confidenceScore": 0,
+            "confidence": 0,
+            "similarityScore": 0,
+            "evidence": [],
+            "evidenceCount": 0,
+            "supportingArticlesCount": 0,
+            "contradictingArticlesCount": 0,
+            "relatedArticlesCount": 0,
+            "trustedSourcesFound": [],
+            "explanation": "Unable to verify this claim using trusted sources.",
+            "verdict": "UNVERIFIED",
+            "finalVerdict": "Unverified",
+            "verdictSymbol": "⚠",
+            "providersTried": [
+              {
+                "id": "local_trusted_corpus",
+                "name": "Local Trusted Corpus",
+                "status": "ok",
+                "claimIndex": 1
+              }
+            ]
+          },
+          {
+            "id": "claim-3",
+            "index": 3,
+            "claim": "Journalist Ben Black was \"shocked\" to discover his fake news from five years ago used by AI.",
+            "confidenceScore": 0,
+            "confidence": 0,
+            "similarityScore": 0,
+            "evidence": [],
+            "evidenceCount": 0,
+            "supportingArticlesCount": 0,
+            "contradictingArticlesCount": 0,
+            "relatedArticlesCount": 0,
+            "trustedSourcesFound": [],
+            "explanation": "Unable to verify this claim using trusted sources.",
+            "verdict": "UNVERIFIED",
+            "finalVerdict": "Unverified",
+            "verdictSymbol": "⚠",
+            "providersTried": [
+              {
+                "id": "local_trusted_corpus",
+                "name": "Local Trusted Corpus",
+                "status": "ok",
+                "claimIndex": 2
+              }
+            ]
+          }
+        ],
+        "trustedSourcesFound": [
+          "Reuters dataset"
+        ],
+        "supportingArticlesCount": 2,
+        "contradictingArticlesCount": 0,
+        "relatedArticlesCount": 0,
+        "supportedClaimsCount": 1,
+        "contradictedClaimsCount": 0,
+        "unverifiedClaimsCount": 2,
+        "similarityScore": 0.0698,
+        "evidenceConfidence": 0.1287,
+        "evidenceVerdict": "SUPPORTS",
+        "message": "",
+        "sources": [
+          {
+            "providerId": "local_trusted_corpus",
+            "providerName": "Local Trusted Corpus",
+            "source": "Reuters dataset",
+            "title": "Trump on Twitter (Dec 21) - Tax Cuts, Home sales",
+            "publishedAt": "2017-12-20",
+            "similarityScore": 0.2095,
+            "stance": "SUPPORT",
+            "summary": "The following statements were posted to the verified Twitter accounts of U.S. President Donald Trump, @realDonaldTrump and @POTUS.",
+            "snippet": "The many Fake News Hate Shows should study your formula for success!"
+          },
+          {
+            "providerId": "local_trusted_corpus",
+            "providerName": "Local Trusted Corpus",
+            "source": "Reuters dataset",
+            "title": "Factbox: Trump on Twitter (November 29) - Matt Lauer, North Korea, Tax Cuts",
+            "publishedAt": "2017-11-28",
+            "similarityScore": 0.2095,
+            "stance": "SUPPORT",
+            "summary": "The following statements were posted to the verified Twitter accounts of U.S. President Donald Trump, @realDonaldTrump and @POTUS.",
+            "snippet": "[0632 EST] - Great, and we should boycott Fake News CNN."
+          }
+        ],
+        "providersTried": [
+          {
+            "id": "local_trusted_corpus",
+            "name": "Local Trusted Corpus",
+            "status": "ok"
+          },
+          {
+            "id": "local_trusted_corpus",
+            "name": "Local Trusted Corpus",
+            "status": "ok"
+          },
+          {
+            "id": "local_trusted_corpus",
+            "name": "Local Trusted Corpus",
+            "status": "ok"
+          }
+        ]
+      },
+      "claimAnalyses": [
+        {
+          "id": "claim-1",
+          "index": 1,
+          "claim": "Fake News - BBC News",
+          "confidenceScore": 0.3862,
+          "confidence": 39,
+          "similarityScore": 0.2095,
+          "evidence": [
+            {
+              "providerId": "local_trusted_corpus",
+              "providerName": "Local Trusted Corpus",
+              "source": "Reuters dataset",
+              "title": "Trump on Twitter (Dec 21) - Tax Cuts, Home sales",
+              "publishedAt": "2017-12-20",
+              "similarityScore": 0.2095,
+              "stance": "SUPPORT",
+              "summary": "The following statements were posted to the verified Twitter accounts of U.S. President Donald Trump, @realDonaldTrump and @POTUS.",
+              "snippet": "The many Fake News Hate Shows should study your formula for success!"
+            },
+            {
+              "providerId": "local_trusted_corpus",
+              "providerName": "Local Trusted Corpus",
+              "source": "Reuters dataset",
+              "title": "Factbox: Trump on Twitter (November 29) - Matt Lauer, North Korea, Tax Cuts",
+              "publishedAt": "2017-11-28",
+              "similarityScore": 0.2095,
+              "stance": "SUPPORT",
+              "summary": "The following statements were posted to the verified Twitter accounts of U.S. President Donald Trump, @realDonaldTrump and @POTUS.",
+              "snippet": "[0632 EST] - Great, and we should boycott Fake News CNN."
+            }
+          ],
+          "evidenceCount": 2,
+          "supportingArticlesCount": 2,
+          "contradictingArticlesCount": 0,
+          "relatedArticlesCount": 0,
+          "trustedSourcesFound": [
+            "Reuters dataset"
+          ],
+          "explanation": "Trusted coverage aligns with this claim. 2 supporting article(s) were found with 39% confidence and no stronger contradictory signal.",
+          "verdict": "SUPPORTED",
+          "finalVerdict": "Supported",
+          "verdictSymbol": "✓",
+          "providersTried": [
+            {
+              "id": "local_trusted_corpus",
+              "name": "Local Trusted Corpus",
+              "status": "ok",
+              "claimIndex": 0
+            }
+          ]
+        },
+        {
+          "id": "claim-2",
+          "index": 2,
+          "claim": "Russian fake news network targets Winter Olympics A Russian fake news network is targeting Ukrainian athletes at the 2026 Milan Cortina Olympic Games.",
+          "confidenceScore": 0,
+          "confidence": 0,
+          "similarityScore": 0,
+          "evidence": [],
+          "evidenceCount": 0,
+          "supportingArticlesCount": 0,
+          "contradictingArticlesCount": 0,
+          "relatedArticlesCount": 0,
+          "trustedSourcesFound": [],
+          "explanation": "Unable to verify this claim using trusted sources.",
+          "verdict": "UNVERIFIED",
+          "finalVerdict": "Unverified",
+          "verdictSymbol": "⚠",
+          "providersTried": [
+            {
+              "id": "local_trusted_corpus",
+              "name": "Local Trusted Corpus",
+              "status": "ok",
+              "claimIndex": 1
+            }
+          ]
+        },
+        {
+          "id": "claim-3",
+          "index": 3,
+          "claim": "Journalist Ben Black was \"shocked\" to discover his fake news from five years ago used by AI.",
+          "confidenceScore": 0,
+          "confidence": 0,
+          "similarityScore": 0,
+          "evidence": [],
+          "evidenceCount": 0,
+          "supportingArticlesCount": 0,
+          "contradictingArticlesCount": 0,
+          "relatedArticlesCount": 0,
+          "trustedSourcesFound": [],
+          "explanation": "Unable to verify this claim using trusted sources.",
+          "verdict": "UNVERIFIED",
+          "finalVerdict": "Unverified",
+          "verdictSymbol": "⚠",
+          "providersTried": [
+            {
+              "id": "local_trusted_corpus",
+              "name": "Local Trusted Corpus",
+              "status": "ok",
+              "claimIndex": 2
+            }
+          ]
+        }
+      ],
+      "mainClaims": [
+        "Fake News - BBC News",
+        "Russian fake news network targets Winter Olympics A Russian fake news network is targeting Ukrainian athletes at the 2026 Milan Cortina Olympic Games.",
+        "Journalist Ben Black was \"shocked\" to discover his fake news from five years ago used by AI."
+      ],
+      "trustedSourcesFound": [
+        "Reuters dataset"
+      ],
+      "supportingArticlesCount": 2,
+      "contradictingArticlesCount": 0,
+      "supportedClaimsCount": 1,
+      "contradictedClaimsCount": 0,
+      "unverifiedClaimsCount": 2,
+      "similarityScore": 0.0698,
+      "evidenceConfidence": 0.1287,
+      "evidenceVerdict": "SUPPORTS"
+    },
     {
       "id": "AN-1783429574893-435",
       "title": "Fake news: Why do we believe it?",
@@ -27489,6 +28716,13 @@
     }
   ],
   "notifications": [
+    {
+      "id": 1783433494513,
+      "title": "Article analyzed",
+      "text": "UNCERTAIN result saved for \"Fake News - BBC News\" at 61% confidence.",
+      "time": "Just now",
+      "unread": true
+    },
     {
       "id": 1783429574893,
       "title": "Article analyzed",

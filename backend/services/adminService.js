@@ -86,8 +86,7 @@ export async function getAdminDashboard({ datasetLimit, analysisLimit } = {}) {
   ]);
   const analyses = database.analyses.map(toAnalysisRow);
   const users = database.users.map(sanitizeUser);
-  const apiLogs = getApiLogs(appConfig.apiLogViewLimit);
-  const totalApiLogs = getApiLogs(250);
+  const [apiLogs, totalApiLogs] = await Promise.all([getApiLogs(appConfig.apiLogViewLimit), getApiLogs(250)]);
   const limit = Number(analysisLimit || appConfig.adminPageSize || 25);
   const datasetViewLimit = Number(datasetLimit || appConfig.adminPageSize || 25);
 
@@ -282,9 +281,11 @@ export async function retrainAdminModels() {
 
 export async function getAdminApiLogs(limit) {
   const appConfig = await getAppConfiguration();
+  const [totalLogs, items] = await Promise.all([getApiLogs(250), getApiLogs(limit || appConfig.apiLogViewLimit)]);
+
   return {
-    total: getApiLogs(250).length,
-    items: getApiLogs(limit || appConfig.apiLogViewLimit),
+    total: totalLogs.length,
+    items,
   };
 }
 
