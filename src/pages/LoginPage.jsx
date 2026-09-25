@@ -1,3 +1,19 @@
+// ============================================================
+// LoginPage.jsx - Faqja e Hyrjes (Login)
+// ============================================================
+// Kjo është faqja e parë që shfaqet kur aplikacioni hapet.
+// Përmban:
+//   - E majta: Prezantimi i platformës me kartat e veçorive
+//   - E djathta: Formulari i hyrjes (email + fjalëkalim)
+//
+// Funksionimi:
+//   1. Përdoruesi shkruan email dhe fjalëkalim
+//   2. Klikohet "Launch Workspace"
+//   3. Formulari dërgon kërkesën te API (backend)
+//   4. Nëse i saktë → hapet paneli kryesor
+//   5. Nëse i gabuar → shfaqet mesazhi i gabimit
+// ============================================================
+
 import { useState } from "react";
 import { LockKeyhole, MoonStar, ShieldCheck, Sparkles, SunMedium, TrendingUp } from "lucide-react";
 import { api } from "../api";
@@ -9,6 +25,8 @@ import { Button } from "../components/ui/button";
 import { Card, CardContent } from "../components/ui/card";
 import { Input } from "../components/ui/input";
 
+// HighlightCard - Kartela e veçorisë në anën e majtë
+// Shfaq ikonën, titullin dhe përshkrimin e një veçorie
 function HighlightCard({ icon, title, description }) {
   const Icon = icon;
 
@@ -23,28 +41,44 @@ function HighlightCard({ icon, title, description }) {
   );
 }
 
+// LoginPage - Faqja kryesore e hyrjes
+// Parametrat:
+//   onLogin - Funksioni i thirrur kur hyrja është e suksesshme
+//             (kalon të dhënat e sesionit, p.sh. emri dhe roli)
 export function LoginPage({ onLogin }) {
-  const [email, setEmail] = useState(DEMO_CREDENTIALS.email);
-  const [password, setPassword] = useState(DEMO_CREDENTIALS.password);
-  const [error, setError] = useState("");
-  const [loading, setLoading] = useState(false);
+  // Vlerat e fushave të formularit
+  const [email, setEmail]       = useState(DEMO_CREDENTIALS.email);     // Email (parazgjedhje: demo)
+  const [password, setPassword] = useState(DEMO_CREDENTIALS.password);  // Fjalëkalim (parazgjedhje: demo)
+  const [error, setError]       = useState("");                          // Mesazhi i gabimit
+  const [loading, setLoading]   = useState(false);                       // A po ngarkohet?
+
+  // Merr temën aktuale dhe funksionin e ndryshimit
   const { theme, toggleTheme } = useTheme();
+  // Merr funksionin e njoftimeve
   const { notify } = useNotifications();
 
+  // handleSubmit - Trajton dërgimin e formularit
+  // async = funksion asinkron (pret përgjigjen e serverit)
   async function handleSubmit(event) {
-    event.preventDefault();
-    setLoading(true);
-    setError("");
+    event.preventDefault();  // Parandalon rifreskimin e faqes (sjellja default e formularit)
+    setLoading(true);         // Trego butonin si "duke u ngarkuar"
+    setError("");             // Pastro gabimet e mëparshme
 
     try {
+      // Dërgo email dhe fjalëkalim te API-ja e backend-it
       const data = await api.login({ email, password });
+
+      // Sukses! Trego njoftim mirëseardhjeje
       notify({
         tone: "success",
         title: "Welcome back",
         message: `${data.user.name} is signed in and ready to review live credibility signals.`,
       });
+
+      // Thirr onLogin() për të hapur panelin kryesor
       onLogin(data);
     } catch (submitError) {
+      // Gabim! Ruaj mesazhin e gabimit dhe trego njoftim
       setError(submitError.message);
       notify({
         tone: "error",
@@ -52,23 +86,30 @@ export function LoginPage({ onLogin }) {
         message: submitError.message,
       });
     } finally {
+      // Gjithmonë: fshij gjendjen e ngarkimit (qoftë sukses ose gabim)
       setLoading(false);
     }
   }
 
   return (
     <div className="relative min-h-screen overflow-hidden px-4 py-4 lg:px-6 lg:py-6">
+      {/* Sfond dekorativ me flluskat e ngjyrës */}
       <div className="pointer-events-none absolute inset-0 overflow-hidden">
-        <div className="absolute left-[6%] top-0 h-72 w-72 rounded-full bg-[rgba(104,213,255,0.16)] blur-3xl" />
-        <div className="absolute bottom-[10%] right-[6%] h-72 w-72 rounded-full bg-[rgba(52,211,153,0.14)] blur-3xl" />
-        <div className="absolute right-[20%] top-[24%] h-60 w-60 rounded-full bg-[rgba(255,194,102,0.12)] blur-3xl" />
+        <div className="absolute left-[6%] top-0 h-72 w-72 rounded-full bg-[rgba(104,213,255,0.16)] blur-3xl" />     {/* Blu lart majtas */}
+        <div className="absolute bottom-[10%] right-[6%] h-72 w-72 rounded-full bg-[rgba(52,211,153,0.14)] blur-3xl" /> {/* Jeshile poshtë djathtas */}
+        <div className="absolute right-[20%] top-[24%] h-60 w-60 rounded-full bg-[rgba(255,194,102,0.12)] blur-3xl" /> {/* Portokalli në mes */}
       </div>
 
+      {/* Grid dy kolona: prezantim + formular */}
       <div className="relative z-10 grid min-h-[calc(100vh-2rem)] gap-4 lg:grid-cols-[1.1fr_0.9fr]">
+
+        {/* KOLONA E MAJTË: Prezantimi i platformës */}
         <Card>
           <CardContent className="flex h-full flex-col justify-between space-y-10">
+            {/* Kreu: Logo dhe butoni i temës */}
             <div className="flex flex-wrap items-center justify-between gap-4">
               <div className="flex items-center gap-3">
+                {/* Logo e Verity Lens */}
                 <div className="flex h-12 w-12 items-center justify-center rounded-2xl border border-[var(--border-subtle)] bg-[linear-gradient(135deg,rgba(104,213,255,0.22),rgba(255,255,255,0.08))]">
                   <Sparkles className="h-5 w-5 text-[var(--foreground)]" />
                 </div>
@@ -78,18 +119,22 @@ export function LoginPage({ onLogin }) {
                 </div>
               </div>
 
+              {/* Butoni i ndryshimit të temës */}
               <Button type="button" variant="outline" onClick={toggleTheme}>
                 {theme === "dark" ? <SunMedium className="h-4 w-4" /> : <MoonStar className="h-4 w-4" />}
                 {theme === "dark" ? "Light Mode" : "Dark Mode"}
               </Button>
             </div>
 
+            {/* Zona kryesore e prezantimit */}
             <div className="space-y-8">
               <div className="space-y-5">
+                {/* Etiketat kryesore */}
                 <div className="flex flex-wrap gap-2">
                   <Badge variant="info">Professional Fake News Detection</Badge>
                   <Badge variant="neutral">Premium SaaS UI</Badge>
                 </div>
+                {/* Titulli i madh */}
                 <h1 className="max-w-4xl font-display text-[clamp(3rem,5vw,5rem)] font-semibold tracking-[-0.08em] text-[var(--foreground)]">
                   Investigate credibility with the confidence, evidence, and polish of a modern AI platform.
                 </h1>
@@ -98,6 +143,7 @@ export function LoginPage({ onLogin }) {
                 </p>
               </div>
 
+              {/* Tre kartela veçorish */}
               <div className="three-column-grid">
                 <HighlightCard
                   icon={ShieldCheck}
@@ -117,6 +163,7 @@ export function LoginPage({ onLogin }) {
               </div>
             </div>
 
+            {/* Tre kartela statistikash në fund */}
             <div className="three-column-grid">
               <article className="metric-tile">
                 <span className="text-sm text-[var(--muted-foreground)]">Confidence policy</span>
@@ -137,8 +184,10 @@ export function LoginPage({ onLogin }) {
           </CardContent>
         </Card>
 
+        {/* KOLONA E DJATHTË: Formulari i hyrjes */}
         <Card className="self-stretch">
           <CardContent className="flex h-full items-center justify-center">
+            {/* Formulari i hyrjes */}
             <form className="w-full max-w-[460px] space-y-6" onSubmit={handleSubmit}>
               <div className="space-y-3">
                 <span className="eyebrow">Secure Access</span>
@@ -146,22 +195,38 @@ export function LoginPage({ onLogin }) {
                 <p className="text-sm leading-7 text-[var(--muted-foreground)]">Use the seeded demo account below or your configured user credentials.</p>
               </div>
 
+              {/* Fusha e email-it */}
               <label className="form-field">
                 <span>Email</span>
-                <Input type="email" value={email} onChange={(event) => setEmail(event.target.value)} placeholder="analyst@example.com" />
+                <Input
+                  type="email"
+                  value={email}
+                  onChange={(event) => setEmail(event.target.value)}  // Përditëso emailin kur shkruhet
+                  placeholder="analyst@example.com"
+                />
               </label>
 
+              {/* Fusha e fjalëkalimit */}
               <label className="form-field">
                 <span>Password</span>
-                <Input type="password" value={password} onChange={(event) => setPassword(event.target.value)} placeholder="Enter password" />
+                <Input
+                  type="password"
+                  value={password}
+                  onChange={(event) => setPassword(event.target.value)}  // Përditëso fjalëkalimin
+                  placeholder="Enter password"
+                />
               </label>
 
+              {/* Mesazhi i gabimit - shfaqet vetëm kur ka gabim */}
               {error ? <div className="callout callout-danger">{error}</div> : null}
 
+              {/* Butoni i dërgimit */}
               <Button type="submit" className="w-full" disabled={loading}>
+                {/* Teksti ndryshon gjatë ngarkimit */}
                 {loading ? "Signing in..." : "Launch Workspace"}
               </Button>
 
+              {/* Seksioni me kredencialet demo (për testim) */}
               <div className="rounded-[28px] border border-[var(--border-subtle)] bg-[var(--panel-soft)] p-5">
                 <div className="flex flex-wrap items-center justify-between gap-3">
                   <div className="space-y-1">
@@ -171,10 +236,12 @@ export function LoginPage({ onLogin }) {
                   <Badge variant="real">Admin</Badge>
                 </div>
                 <div className="mt-4 space-y-3">
+                  {/* Email demo */}
                   <div className="rounded-2xl border border-[var(--border-subtle)] bg-[var(--panel)] px-4 py-3">
                     <small className="block text-xs uppercase tracking-[0.14em] text-[var(--muted-foreground)]">Email</small>
                     <strong className="mt-1 block text-sm text-[var(--foreground)]">{DEMO_CREDENTIALS.email}</strong>
                   </div>
+                  {/* Fjalëkalimi demo */}
                   <div className="rounded-2xl border border-[var(--border-subtle)] bg-[var(--panel)] px-4 py-3">
                     <small className="block text-xs uppercase tracking-[0.14em] text-[var(--muted-foreground)]">Password</small>
                     <strong className="mt-1 block text-sm text-[var(--foreground)]">{DEMO_CREDENTIALS.password}</strong>
